@@ -66,7 +66,7 @@ class _LoginForm extends StatelessWidget {
 
           const CustomTextFormField(
             label: 'Usuario',
-            keyboardType: TextInputType.emailAddress,
+            keyboardType: TextInputType.text,
           ),
           const SizedBox( height: 30 ),
 
@@ -82,7 +82,7 @@ class _LoginForm extends StatelessWidget {
             height: 60,
             child: CustomFilledButton(
               text: 'Ingresar',
-              buttonColor: Color(0xFF283B71),
+              buttonColor: const Color(0xFF283B71),
               onPressed: (){
 
               },

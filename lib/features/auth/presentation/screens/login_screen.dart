@@ -24,7 +24,7 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox( height: 80 ),
                 // Icon Banner
                 const Icon( 
-                  Icons.production_quantity_limits_rounded, 
+                  Icons.water_drop, 
                   color: Colors.white,
                   size: 100,
                 ),
@@ -65,7 +65,7 @@ class _LoginForm extends StatelessWidget {
           const SizedBox( height: 90 ),
 
           const CustomTextFormField(
-            label: 'Correo',
+            label: 'Usuario',
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox( height: 30 ),
@@ -82,7 +82,7 @@ class _LoginForm extends StatelessWidget {
             height: 60,
             child: CustomFilledButton(
               text: 'Ingresar',
-              buttonColor: Colors.black,
+              buttonColor: Color(0xFF283B71),
               onPressed: (){
 
               },
@@ -91,16 +91,7 @@ class _LoginForm extends StatelessWidget {
 
           const Spacer( flex: 2 ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('¿No tienes cuenta?'),
-              TextButton(
-                onPressed: ()=> context.push('/register'), 
-                child: const Text('Crea una aquí')
-              )
-            ],
-          ),
+          
 
           const Spacer( flex: 1),
         ],

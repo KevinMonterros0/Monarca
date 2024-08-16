@@ -2,6 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:teslo_shop/features/shared/shared.dart';
 import 'package:formz/formz.dart';
 
+final loginFormProvider = StateNotifierProvider.autoDispose<LoginFormNotifier,LoginFormState>((ref) {
+  return LoginFormNotifier();
+});
+
 class LoginFormState{
 
   final bool isPosting;
@@ -85,6 +89,3 @@ class LoginFormState{
     
   }
 
-final loginFormProvider = StateNotifierProvider.autoDispose<LoginFormNotifier,LoginFormState>((ref) {
-  return LoginFormNotifier();
-});

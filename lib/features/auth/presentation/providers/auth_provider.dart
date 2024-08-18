@@ -21,10 +21,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await Future.delayed(const Duration(milliseconds: 500));
     try {
       final user = await authRepository.login(username, password);
-      _setLoggedUser(user);
+    _setLoggedUser(user);
     } on  WrongCredentianls{
       logout('Credenciales no son correctas');
-    }catch(e){
+    }on ConnectionTimeout{
+      logout('Timeout');
+    }
+    catch(e){
       logout('Error no controlado');
     }
     // final user = await authRepository.login(username, password);
@@ -37,6 +40,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void _setLoggedUser(User user){
     //TODO: Nnecesito guardar el token fisicamente
+
     state = state.copyWith(
       user:user,
       authStatus: AuthStatus.authenticated,

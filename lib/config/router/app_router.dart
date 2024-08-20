@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
-import 'package:teslo_shop/features/auth/auth.dart';
-import 'package:teslo_shop/features/products/products.dart';
+import 'package:monarca/features/auth/auth.dart';
+import 'package:monarca/features/products/products.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/login',

@@ -1,10 +1,10 @@
 
 
 import 'package:dio/dio.dart';
-import 'package:teslo_shop/config/config.dart';
-import 'package:teslo_shop/features/auth/domain/datasources/auth_datasource.dart';
-import 'package:teslo_shop/features/auth/domain/entities/user.dart';
-import 'package:teslo_shop/features/auth/infrastructure/infrastructure.dart';
+import 'package:monarca/config/config.dart';
+import 'package:monarca/features/auth/domain/datasources/auth_datasource.dart';
+import 'package:monarca/features/auth/domain/entities/user.dart';
+import 'package:monarca/features/auth/infrastructure/infrastructure.dart';
 
 class AuthDatasourceImpl extends AuthDatasource{
 
@@ -32,9 +32,9 @@ class AuthDatasourceImpl extends AuthDatasource{
     } on DioException catch (e) {
       if(e.response?.statusCode == 401 || e.response?.statusCode == 404) throw WrongCredentianls();
       if(e.type == DioExceptionType.connectionTimeout) throw ConnectionTimeout();
-      throw CustomError('Something wrong happend: $e', 500);
+      throw CustomError('Something wrong happend: $e');
     }catch (e){
-      throw CustomError('Something wrong happend $e', 500);
+      throw CustomError('Something wrong happend $e');
     }
   }
 

@@ -1,7 +1,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:teslo_shop/features/auth/domain/domain.dart';
-import 'package:teslo_shop/features/auth/infrastructure/infrastructure.dart';
+import 'package:monarca/features/auth/domain/domain.dart';
+import 'package:monarca/features/auth/infrastructure/infrastructure.dart';
 
 
 final authProvider = StateNotifierProvider<AuthNotifier,AuthState>((ref) {
@@ -44,6 +44,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(
       user:user,
       authStatus: AuthStatus.authenticated,
+      errorMessage: ''
     );
   }
 

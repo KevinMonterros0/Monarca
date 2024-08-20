@@ -1,5 +1,5 @@
-import 'package:teslo_shop/features/auth/domain/domain.dart';
-import 'package:teslo_shop/features/auth/infrastructure/datasources/auth_datasource_impl.dart';
+import 'package:monarca/features/auth/domain/domain.dart';
+import 'package:monarca/features/auth/infrastructure/datasources/auth_datasource_impl.dart';
 
 class AuthRepositoryImpl extends AuthRepository{
 

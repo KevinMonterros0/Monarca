@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:teslo_shop/features/shared/shared.dart';
+import 'package:monarca/features/shared/shared.dart';
 
 
 class RegisterScreen extends StatelessWidget {

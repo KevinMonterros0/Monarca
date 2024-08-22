@@ -12,7 +12,7 @@ class ProductsScreen extends StatelessWidget {
     return Scaffold(
       drawer: SideMenu( scaffoldKey: scaffoldKey ),
       appBar: AppBar(
-        title: const Text('Products'),
+        title: const Text('Productos'),
         actions: [
           IconButton(
             onPressed: (){}, 
@@ -36,6 +36,6 @@ class _ProductsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Eres genial!'));
+    return const Center(child: Text('Hola amigo!'));
   }
 }

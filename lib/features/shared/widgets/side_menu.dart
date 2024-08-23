@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:monarca/features/auth/infrastructure/mappers/user_sesion.dart';
 import 'package:monarca/features/auth/presentation/providers/auth_provider.dart';
 import 'package:monarca/features/shared/shared.dart';
 
 class SideMenu extends ConsumerStatefulWidget {
 
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final String? globalUsername = UserSession().username;
 
-  const SideMenu({
+  SideMenu({
     super.key, 
     required this.scaffoldKey
   });
@@ -50,7 +52,7 @@ class SideMenuState extends ConsumerState<SideMenu> {
 
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
-          child: Text('Tony Stark', style: textStyles.titleSmall ),
+          child: Text(UserSession().username.toString(), style: textStyles.titleSmall ),
         ),
 
         const NavigationDrawerDestination(

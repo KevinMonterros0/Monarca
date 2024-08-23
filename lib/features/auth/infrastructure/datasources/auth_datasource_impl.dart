@@ -1,10 +1,12 @@
 
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:monarca/config/config.dart';
 import 'package:monarca/features/auth/domain/datasources/auth_datasource.dart';
 import 'package:monarca/features/auth/domain/entities/user.dart';
 import 'package:monarca/features/auth/infrastructure/infrastructure.dart';
+import 'package:monarca/features/auth/infrastructure/mappers/user_sesion.dart';
 
 class AuthDatasourceImpl extends AuthDatasource{
 
@@ -42,9 +44,9 @@ class AuthDatasourceImpl extends AuthDatasource{
         'password':password
       });
       final user = UserMapper.userJsonToEntity(response.data);
+      UserSession().username = username; 
       return user;
     } on DioException catch (e) {
-      print('Aqui dio clavo')
       if(e.response?.statusCode == 401 || e.response?.statusCode == 404) throw WrongCredentianls();
       if(e.type == DioExceptionType.connectionTimeout) throw ConnectionTimeout();
       throw CustomError('Something wrong happend: $e');

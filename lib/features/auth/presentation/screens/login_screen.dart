@@ -4,7 +4,6 @@ import 'package:monarca/features/auth/presentation/providers/auth_provider.dart'
 import 'package:monarca/features/auth/presentation/providers/providers.dart';
 import 'package:monarca/features/shared/shared.dart';
 
-
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -64,6 +63,7 @@ class _LoginForm extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
 
     final loginForm = ref.watch(loginFormProvider);
+    final isPasswordVisible = ref.watch(passwordVisibilityProvider);
 
     ref.listen(authProvider, (previous,next){
       if(next.errorMessage.isEmpty) return;
@@ -90,11 +90,16 @@ class _LoginForm extends ConsumerWidget {
 
           CustomTextFormField(
             label: 'Contraseña',
-            obscureText: true,
+            obscureText: !isPasswordVisible,
             keyboardType: TextInputType.text,
             onChanged: (value) => ref.read(loginFormProvider.notifier).onPasswordChange(value),
             errorMessage: loginForm.isFormPosted ? loginForm.password.errorMessage: null,
-            
+            suffixIcon: IconButton(
+              icon: Icon(
+                isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+              ),
+              onPressed: () => ref.read(passwordVisibilityProvider.notifier).state = !isPasswordVisible,
+            ),
           ),
     
           const SizedBox( height: 30 ),
@@ -112,11 +117,11 @@ class _LoginForm extends ConsumerWidget {
 
           const Spacer( flex: 2 ),
 
-          
-
           const Spacer( flex: 1),
         ],
       ),
     );
   }
 }
+
+final passwordVisibilityProvider = StateProvider<bool>((ref) => false);

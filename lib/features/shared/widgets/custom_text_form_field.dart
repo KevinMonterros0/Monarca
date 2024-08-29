@@ -10,6 +10,7 @@ class CustomTextFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final Function(String)? onChanged;
   final String? Function(String?)? validator;
+    final Widget? suffixIcon; 
 
   const CustomTextFormField({
     super.key, 
@@ -20,6 +21,7 @@ class CustomTextFormField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.onChanged, 
     this.validator, 
+    this.suffixIcon,
   });
 
   @override
@@ -64,6 +66,7 @@ class CustomTextFormField extends StatelessWidget {
           hintText: hint,
           errorText: errorMessage,
           focusColor: colors.primary,
+          suffixIcon: suffixIcon,
           // icon: Icon( Icons.supervised_user_circle_outlined, color: colors.primary, )
         ),
       ),

@@ -119,7 +119,7 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
                 : null,
             onChanged: notifier.onUsernameChange,
           ),
-          const SizedBox(height: 60),
+          const SizedBox(height: 40),
 
           CustomTextFormField(
             label: 'Contraseña',
@@ -135,7 +135,7 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
               onPressed: notifier.togglePasswordVisibility,
             ),
           ),
-          const SizedBox(height: 60),
+          const SizedBox(height: 40),
 
           CustomTextFormField(
             label: 'Repita la contraseña',
@@ -151,7 +151,7 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
               onPressed: notifier.toggleConfirmPasswordVisibility,
             ),
           ),
-          const SizedBox(height: 60),
+          const SizedBox(height: 40),
 
           items.isEmpty
               ? CircularProgressIndicator()
@@ -170,11 +170,11 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
                     );
                   }).toList(),
                 ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
 
           SizedBox(
             width: double.infinity,
-            height: 60,
+            height: 40,
             child: CustomFilledButton(
               text: 'Crear',
               buttonColor: const Color(0xFF283B71),

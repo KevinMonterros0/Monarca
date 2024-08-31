@@ -27,7 +27,7 @@ final goRouterProvider = Provider((ref){
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => const RegisterScreen(),
+      builder: (context, state) => RegisterScreen(),
     ),
 
     ///* Product Routes

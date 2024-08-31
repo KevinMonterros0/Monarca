@@ -63,7 +63,7 @@ class _LoginForm extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
 
     final loginForm = ref.watch(loginFormProvider);
-    final isPasswordVisible = ref.watch(passwordVisibilityProvider);
+    final isPasswordVisible = ref.watch(loginPasswordVisibilityProvider);
 
     ref.listen(authProvider, (previous,next){
       if(next.errorMessage.isEmpty) return;
@@ -98,7 +98,7 @@ class _LoginForm extends ConsumerWidget {
               icon: Icon(
                 isPasswordVisible ? Icons.visibility_off : Icons.visibility,
               ),
-              onPressed: () => ref.read(passwordVisibilityProvider.notifier).state = !isPasswordVisible,
+              onPressed: () => ref.read(loginPasswordVisibilityProvider.notifier).state = !isPasswordVisible,
             ),
           ),
     
@@ -124,4 +124,4 @@ class _LoginForm extends ConsumerWidget {
   }
 }
 
-final passwordVisibilityProvider = StateProvider<bool>((ref) => false);
+final loginPasswordVisibilityProvider = StateProvider<bool>((ref) => false);

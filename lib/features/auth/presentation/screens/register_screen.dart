@@ -119,7 +119,7 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
                 : null,
             onChanged: notifier.onUsernameChange,
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 60),
 
           CustomTextFormField(
             label: 'Contraseña',
@@ -135,7 +135,7 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
               onPressed: notifier.togglePasswordVisibility,
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 60),
 
           CustomTextFormField(
             label: 'Repita la contraseña',
@@ -151,7 +151,7 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
               onPressed: notifier.toggleConfirmPasswordVisibility,
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 60),
 
           items.isEmpty
               ? CircularProgressIndicator()
@@ -170,19 +170,28 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
                     );
                   }).toList(),
                 ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 30),
 
           SizedBox(
             width: double.infinity,
-            height: 40,
+            height: 60,
             child: CustomFilledButton(
               text: 'Crear',
               buttonColor: const Color(0xFF283B71),
-              onPressed: () {
+              onPressed: () async {
                 if (selectedItem != null) {
-                  notifier.onFormSubmit(selectedItem!.id);
+                  final success = await notifier.onFormSubmit(selectedItem!.id);
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Usuario creado exitosamente')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error al crear usuario')),
+                    );
+                  }
                 } else {
-                  notifier.onFormSubmit(0); 
+                  notifier.onFormSubmit(0);
                 }
               },
             ),
@@ -192,6 +201,9 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
         ],
       ),
     );
+  }
+
+  void saveItem(int id) {
   }
 }
 

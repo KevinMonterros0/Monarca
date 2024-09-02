@@ -47,16 +47,26 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
     state = state.copyWith(isConfirmPasswordVisible: !state.isConfirmPasswordVisible);
   }
 
-  Future<void> onFormSubmit(int employeeId) async {
+  Future<bool> onFormSubmit(int employeeId) async {
     _touchEveryField();
 
-    if (!state.isValid) return;
+    if (!state.isValid) return false;
 
     state = state.copyWith(isPosting: true);
 
-    await registerUserCallback(state.username.value, state.password.value, employeeId);
+    try {
+      await registerUserCallback(
+        state.username.value,
+        state.password.value,
+        employeeId,
+      );
 
-    state = state.copyWith(isPosting: false);
+      state = state.copyWith(isPosting: false);
+      return true;  
+    } catch (error) {
+      state = state.copyWith(isPosting: false);
+      return false; 
+    }
   }
 
   void _touchEveryField() {

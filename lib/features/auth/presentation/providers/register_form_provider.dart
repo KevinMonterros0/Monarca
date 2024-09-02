@@ -7,7 +7,7 @@ import 'package:monarca/features/shared/infrastucture/services/key_value_storage
 
 final registerFormProvider = StateNotifierProvider.autoDispose<RegisterFormNotifier, RegisterFormState>((ref) {
   final keyValueStorageService = KeyValueStorageServiceImpl();
-  final registerUserCallback = (String username, String password, int employeeId) async {
+  registerUserCallback(String username, String password, int employeeId) async {
     final token = await keyValueStorageService.getValue<String>('token');
     final response = await http.post(
       Uri.parse('https://apiproyectomonarca.fly.dev/api/usuarios/registrar'),
@@ -25,7 +25,7 @@ final registerFormProvider = StateNotifierProvider.autoDispose<RegisterFormNotif
     if (response.statusCode != 201) {
       throw Exception('Error al registrar el usuario');
     }
-  };
+  }
 
   return RegisterFormNotifier(registerUserCallback: registerUserCallback);
 });

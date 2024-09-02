@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:monarca/config/router/auth_router.notifier.dart';
 import 'package:monarca/features/auth/auth.dart';
+import 'package:monarca/features/auth/domain/domain.dart';
 import 'package:monarca/features/auth/presentation/providers/auth_provider.dart';
+import 'package:monarca/features/auth/presentation/screens/user_screen.dart';
 import 'package:monarca/features/products/products.dart';
 
 
@@ -26,8 +28,12 @@ final goRouterProvider = Provider((ref){
       builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
-      path: '/register',
+      path: '/registernew',
       builder: (context, state) => RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => UserScreen(),
     ),
 
     ///* Product Routes

@@ -9,19 +9,23 @@ class UserScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userProvider);
-    
-    // Calcular el número de columnas en función del ancho de la pantalla
     final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = (width / 200).floor(); // Ajusta 200 para el tamaño de la columna deseada
+    final crossAxisCount = (width / 200).floor(); 
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/'); 
+          },
+        ),
         title: const Text('Usuarios'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add, size: 30), 
             onPressed: () {
-              context.push('/registernew');
+              context.push('/registerusers');
             },
           ),
         ],

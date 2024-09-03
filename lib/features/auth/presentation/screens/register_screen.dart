@@ -32,7 +32,7 @@ class RegisterScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     IconButton(
-                      onPressed: () => context.push('/'),
+                      onPressed: () => context.push('/users'),
                       icon: const Icon(Icons.arrow_back_rounded, size: 40, color: Colors.white),
                     ),
                     const Spacer(flex: 1),

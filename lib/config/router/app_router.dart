@@ -28,11 +28,11 @@ final goRouterProvider = Provider((ref){
       builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
-      path: '/registernew',
+      path: '/registerusers',
       builder: (context, state) => RegisterScreen(),
     ),
     GoRoute(
-      path: '/register',
+      path: '/users',
       builder: (context, state) => UserScreen(),
     ),
 

@@ -47,7 +47,7 @@ class SideMenuState extends ConsumerState<SideMenu> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
-                child: CircularProgressIndicator(), // Muestra un indicador mientras se carga el username
+                child: CircularProgressIndicator(),
               );
             }
             if (snapshot.hasError) {
@@ -97,7 +97,7 @@ class SideMenuState extends ConsumerState<SideMenu> {
   String? _handleNavigation(int index, BuildContext context) {
     switch (index) {
       case 0:
-        return '/register';
+        return '/users';
       case 1:
         return '/productos';
       case 2:

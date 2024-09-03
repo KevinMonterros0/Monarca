@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:monarca/features/auth/infrastructure/mappers/user_sesion.dart';
 import 'package:monarca/features/auth/presentation/providers/auth_provider.dart';
+import 'package:monarca/features/auth/presentation/providers/users_provider.dart';
 import 'package:monarca/features/shared/shared.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SideMenu extends ConsumerStatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -16,6 +19,35 @@ class SideMenu extends ConsumerStatefulWidget {
 
 class SideMenuState extends ConsumerState<SideMenu> {
   int navDrawerIndex = 0;
+  List<Menu> menuItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMenus();
+  }
+
+  Future<void> _fetchMenus() async {
+    final userId = await UserSession().getUserId();
+    final token = await keyValueStorageService.getValue<String>('token');
+    if (userId != null) {
+      final response = await http.get(
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/menus/obtenerPorUsuario/$userId'),
+        headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          menuItems = data.map((item) => Menu.fromJson(item)).toList();
+        });
+      } else {
+        print('Error al obtener los menús: ${response.statusCode}');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +62,7 @@ class SideMenuState extends ConsumerState<SideMenu> {
           navDrawerIndex = value;
         });
 
-        final selectedItem = _handleNavigation(value, context);
+        final selectedItem = menuItems[value].url;
         if (selectedItem != null) {
           context.push(selectedItem);
         }
@@ -42,7 +74,7 @@ class SideMenuState extends ConsumerState<SideMenu> {
           child: Text('Saludos', style: textStyles.titleMedium),
         ),
         FutureBuilder<String?>(
-          future: UserSession().getUsername(), // Obtiene el username
+          future: UserSession().getUsername(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Padding(
@@ -62,18 +94,10 @@ class SideMenuState extends ConsumerState<SideMenu> {
             );
           },
         ),
-        const NavigationDrawerDestination(
-          icon: Icon(Icons.person),
-          label: Text('Usuario'),
-        ),
-        const NavigationDrawerDestination(
-          icon: Icon(Icons.inventory),
-          label: Text('Productos'),
-        ),
-        const NavigationDrawerDestination(
-          icon: Icon(Icons.sell),
-          label: Text('Venta'),
-        ),
+        ...menuItems.map((menu) => NavigationDrawerDestination(
+          icon: Icon(_getIconData(menu.icon)),
+          label: Text(menu.nombre),
+        )),
         const Padding(
           padding: EdgeInsets.fromLTRB(28, 16, 28, 10),
           child: Divider(),
@@ -94,16 +118,33 @@ class SideMenuState extends ConsumerState<SideMenu> {
     );
   }
 
-  String? _handleNavigation(int index, BuildContext context) {
-    switch (index) {
-      case 0:
-        return '/users';
-      case 1:
-        return '/productos';
-      case 2:
-        return '/venta';
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'person':
+        return Icons.person;
+      case 'inventory':
+        return Icons.inventory;
+      case 'sell':
+        return Icons.sell;
+      // Agrega más casos según los iconos que utilices
       default:
-        return null;
+        return Icons.help_outline;
     }
+  }
+}
+
+class Menu {
+  final String nombre;
+  final String url;
+  final String icon;
+
+  Menu({required this.nombre, required this.url, required this.icon});
+
+  factory Menu.fromJson(Map<String, dynamic> json) {
+    return Menu(
+      nombre: json['nombre'],
+      url: json['url'],
+      icon: json['icon'],
+    );
   }
 }

@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:monarca/config/router/auth_router.notifier.dart';
 import 'package:monarca/features/auth/auth.dart';
 import 'package:monarca/features/auth/presentation/providers/auth_provider.dart';
+import 'package:monarca/features/auth/presentation/screens/user_detail_screen.dart';
 import 'package:monarca/features/auth/presentation/screens/user_screen.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
-import 'package:monarca/features/products/products.dart';
 
 
 final goRouterProvider = Provider((ref){
@@ -34,6 +34,14 @@ final goRouterProvider = Provider((ref){
     GoRoute(
       path: '/users',
       builder: (context, state) => const UserScreen(),
+    ),
+    
+    GoRoute(
+      path: '/userDetail',
+      builder: (context, state) {
+        final userId = state.extra as int;
+        return UserDetailScreen(userId: userId);
+      },
     ),
 
     ///* Product Routes

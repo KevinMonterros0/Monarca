@@ -10,16 +10,10 @@ class UserScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userProvider);
     final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = (width / 200).floor(); 
+    final crossAxisCount = (width / 200).floor();
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            context.go('/'); 
-          },
-        ),
         title: const Text('Usuarios'),
         actions: [
           IconButton(
@@ -36,7 +30,7 @@ class UserScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(10),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                childAspectRatio: 1, 
+                childAspectRatio: 1,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
@@ -45,11 +39,7 @@ class UserScreen extends ConsumerWidget {
                 final user = userState.users[index];
                 return GestureDetector(
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('ID de usuario seleccionado: ${user.id}'),
-                      ),
-                    );
+                    context.push('/userDetail', extra: user.id);
                   },
                   child: Card(
                     elevation: 2,

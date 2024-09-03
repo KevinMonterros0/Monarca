@@ -21,7 +21,6 @@ class SideMenuState extends ConsumerState<SideMenu> {
   Widget build(BuildContext context) {
     final hasNotch = MediaQuery.of(context).viewPadding.top > 35;
     final textStyles = Theme.of(context).textTheme;
-    final username = UserSession().username; 
 
     return NavigationDrawer(
       elevation: 1,
@@ -42,9 +41,26 @@ class SideMenuState extends ConsumerState<SideMenu> {
           padding: EdgeInsets.fromLTRB(20, hasNotch ? 0 : 20, 16, 0),
           child: Text('Saludos', style: textStyles.titleMedium),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
-          child: Text(username.toString(), style: textStyles.titleSmall),
+        FutureBuilder<String?>(
+          future: UserSession().getUsername(), // Obtiene el username
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
+                child: CircularProgressIndicator(), // Muestra un indicador mientras se carga el username
+              );
+            }
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
+                child: Text('Error al cargar usuario', style: textStyles.titleSmall),
+              );
+            }
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
+              child: Text(snapshot.data ?? 'Usuario no encontrado', style: textStyles.titleSmall),
+            );
+          },
         ),
         const NavigationDrawerDestination(
           icon: Icon(Icons.person),

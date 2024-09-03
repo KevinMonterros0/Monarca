@@ -1,7 +1,4 @@
-
-
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:monarca/config/config.dart';
 import 'package:monarca/features/auth/domain/datasources/auth_datasource.dart';
 import 'package:monarca/features/auth/domain/entities/user.dart';
@@ -27,11 +24,11 @@ class AuthDatasourceImpl extends AuthDatasource{
       
       final user = UserMapper.userJsonToEntity(response.data);
       return user;
-    }on DioException catch (e) {
+    } on DioException catch (e) {
       if(e.response?.statusCode == 401 || e.response?.statusCode == 404) throw WrongCredentianls();
       if(e.type == DioExceptionType.connectionTimeout) throw ConnectionTimeout();
       throw CustomError('Something wrong happend: $e');
-    }catch (e){
+    } catch (e) {
       throw CustomError('Something wrong happend $e');
     }
   }
@@ -43,14 +40,18 @@ class AuthDatasourceImpl extends AuthDatasource{
         'username':username,
         'password':password
       });
+
       final user = UserMapper.userJsonToEntity(response.data);
-      UserSession().username = username; 
+
+      // Guardar el username en la sesión
+      await UserSession().setUsername(username); 
+
       return user;
     } on DioException catch (e) {
       if(e.response?.statusCode == 401 || e.response?.statusCode == 404) throw WrongCredentianls();
       if(e.type == DioExceptionType.connectionTimeout) throw ConnectionTimeout();
       throw CustomError('Something wrong happend: $e');
-    }catch (e){
+    } catch (e) {
       throw CustomError('Something wrong happend $e');
     }
   }

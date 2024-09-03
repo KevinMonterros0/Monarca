@@ -8,7 +8,7 @@ import 'package:monarca/features/shared/shared.dart';
 class SideMenu extends ConsumerStatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
 
-  SideMenu({super.key, required this.scaffoldKey});
+  const SideMenu({super.key, required this.scaffoldKey});
 
   @override
   SideMenuState createState() => SideMenuState();
@@ -45,8 +45,8 @@ class SideMenuState extends ConsumerState<SideMenu> {
           future: UserSession().getUsername(), // Obtiene el username
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
+              return const Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 16, 10),
                 child: CircularProgressIndicator(),
               );
             }

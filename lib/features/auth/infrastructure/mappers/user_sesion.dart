@@ -9,6 +9,7 @@ class UserSession {
   }
 
   String? _username;
+  int? _userId;
 
   Future<void> setUsername(String username) async {
     _username = username;
@@ -25,9 +26,26 @@ class UserSession {
     return _username;
   }
 
+  Future<void> setUserId(int userId) async {
+    _userId = userId;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('userId', userId);
+  }
+
+  Future<int?> getUserId() async {
+    if (_userId != null) {
+      return _userId;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getInt('userId');
+    return _userId;
+  }
+
   Future<void> clearSession() async {
     _username = null;
+    _userId = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('username');
+    await prefs.remove('userId');
   }
 }

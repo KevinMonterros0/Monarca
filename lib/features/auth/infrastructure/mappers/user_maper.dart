@@ -4,5 +4,6 @@ class UserMapper{
   static User userJsonToEntity(Map<String,dynamic> json) => 
   User(
   message:json['message'],
-  token: json['token']);
+  token: json['token'],
+  idUsuario:json['idUsuario']);
 }

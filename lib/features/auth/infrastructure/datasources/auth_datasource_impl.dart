@@ -43,8 +43,8 @@ class AuthDatasourceImpl extends AuthDatasource{
 
       final user = UserMapper.userJsonToEntity(response.data);
 
-      // Guardar el username en la sesión
       await UserSession().setUsername(username); 
+      await UserSession().setUserId(user.idUsuario); 
 
       return user;
     } on DioException catch (e) {

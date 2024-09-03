@@ -9,6 +9,10 @@ class UserScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userProvider);
+    
+    // Calcular el número de columnas en función del ancho de la pantalla
+    final width = MediaQuery.of(context).size.width;
+    final crossAxisCount = (width / 200).floor(); // Ajusta 200 para el tamaño de la columna deseada
 
     return Scaffold(
       appBar: AppBar(
@@ -26,9 +30,9 @@ class UserScreen extends ConsumerWidget {
           ? const Center(child: CircularProgressIndicator())
           : GridView.builder(
               padding: const EdgeInsets.all(10),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 2 / 2,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: 1, 
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),

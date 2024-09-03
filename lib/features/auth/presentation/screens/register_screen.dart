@@ -174,7 +174,7 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
 
           SizedBox(
             width: double.infinity,
-            height: 60,
+            height: 40,
             child: CustomFilledButton(
               text: 'Crear',
               buttonColor: const Color(0xFF283B71),

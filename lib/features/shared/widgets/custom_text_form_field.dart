@@ -9,6 +9,7 @@ class CustomTextFormField extends StatelessWidget {
   final Function(String)? onChanged;
   final String? Function(String?)? validator;
   final Widget? suffixIcon;
+  final String? initialValue;
 
   const CustomTextFormField({
     super.key,
@@ -20,6 +21,7 @@ class CustomTextFormField extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.suffixIcon,
+    this.initialValue, 
   });
 
   @override
@@ -48,17 +50,26 @@ class CustomTextFormField extends StatelessWidget {
         validator: validator,
         obscureText: obscureText,
         keyboardType: keyboardType,
+        initialValue: initialValue, 
         style: const TextStyle(fontSize: 20, color: Colors.black54),
         decoration: InputDecoration(
-          floatingLabelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
+          floatingLabelStyle: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
           enabledBorder: border,
           focusedBorder: border,
-          errorBorder: border.copyWith(borderSide: const BorderSide(color: Colors.red)),
-          focusedErrorBorder: border.copyWith(borderSide: const BorderSide(color: Colors.red)),
+          errorBorder: border.copyWith(
+            borderSide: const BorderSide(color: Colors.red),
+          ),
+          focusedErrorBorder: border.copyWith(
+            borderSide: const BorderSide(color: Colors.red),
+          ),
           isDense: true,
           label: label != null ? Text(label!) : null,
           hintText: hint,
-          errorText: errorMessage, // Mostrar el mensaje de error
+          errorText: errorMessage, 
           suffixIcon: suffixIcon,
         ),
       ),

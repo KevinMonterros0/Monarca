@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 import 'package:monarca/features/shared/widgets/geometrical_background.dart';
+import 'package:monarca/features/shared/widgets/custom_filled_button.dart';
+import 'package:monarca/features/shared/widgets/custom_text_form_field.dart';
 
 class UserDetailScreen extends ConsumerStatefulWidget {
   final int userId;
@@ -18,22 +20,15 @@ class UserDetailScreen extends ConsumerStatefulWidget {
 class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
   Map<String, dynamic>? userDetails;
   bool isLoading = true;
-  late TextEditingController _usernameController;
-  late TextEditingController _passwordController;
+  String _username = '';
+  String _password = '';
+
+  bool isPasswordVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _usernameController = TextEditingController();
-    _passwordController = TextEditingController();
     fetchUserDetails();
-  }
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 
   Future<void> fetchUserDetails() async {
@@ -52,7 +47,7 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
       if (response.statusCode == 200) {
         setState(() {
           userDetails = json.decode(response.body);
-          _usernameController.text = userDetails!['username'];
+          _username = userDetails!['username'];
           isLoading = false;
         });
       } else {
@@ -71,6 +66,7 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
     final size = MediaQuery.of(context).size;
     final scaffoldBackgroundColor = Theme.of(context).scaffoldBackgroundColor;
     final textStyles = Theme.of(context).textTheme;
+
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
@@ -85,7 +81,7 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     IconButton(
-                      onPressed: () => context.push('/'),
+                      onPressed: () => context.push('/users'),
                       icon: const Icon(Icons.arrow_back_rounded,
                           size: 40, color: Colors.white),
                     ),
@@ -100,7 +96,7 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                 ),
                 const SizedBox(height: 80),
                 Container(
-                  height: size.height - 260, // Ajuste del contenido interno
+                  height: size.height - 260, 
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: scaffoldBackgroundColor,
@@ -122,26 +118,48 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                                   Text('Modificar',
                                       style: textStyles.titleMedium),
                                   const SizedBox(height: 50),
-                                  TextField(
-                                    controller: _usernameController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Username',
-                                      border: OutlineInputBorder(),
-                                    ),
+
+                                  CustomTextFormField(
+                                    label: 'Username',
+                                    initialValue: _username,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _username = value;
+                                      });
+                                    },
                                   ),
                                   const SizedBox(height: 30),
-                                  TextField(
-                                    controller: _passwordController,
-                                    obscureText: true,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Contraseña',
-                                      border: OutlineInputBorder(),
+
+                                  CustomTextFormField(
+                                    label: 'Contraseña',
+                                    obscureText: !isPasswordVisible,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _password = value;
+                                      });
+                                    },
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        isPasswordVisible
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          isPasswordVisible =
+                                              !isPasswordVisible;
+                                        });
+                                      },
                                     ),
                                   ),
                                   const SizedBox(height: 50),
-                                  ElevatedButton(
-                                    onPressed: () {},
-                                    child: const Text('Actualizar'),
+
+                                  CustomFilledButton(
+                                    text: 'Actualizar',
+                                    buttonColor: const Color(0xFF283B71),
+                                    onPressed: () {
+
+                                    },
                                   ),
                                 ],
                               ),

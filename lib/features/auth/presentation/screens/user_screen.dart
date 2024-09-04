@@ -14,6 +14,12 @@ class UserScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, size: 30), 
+          onPressed: () {
+            context.push('/'); 
+          },
+        ),
         title: const Text('Usuarios'),
         actions: [
           IconButton(

@@ -6,12 +6,23 @@ import 'package:monarca/features/auth/presentation/providers/users_provider.dart
 import 'package:go_router/go_router.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
-class UserScreen extends ConsumerWidget {
+class UserScreen extends ConsumerStatefulWidget {
   const UserScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userState = ref.watch(userProvider);
+  _UserScreenState createState() => _UserScreenState();
+}
+
+class _UserScreenState extends ConsumerState<UserScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Llamada para buscar usuarios al iniciar la pantalla
+    ref.read(userProvider.notifier).fetchUsers();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final crossAxisCount = (width / 200).floor();
 
@@ -33,53 +44,61 @@ class UserScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: userState.users.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : GridView.builder(
-              padding: const EdgeInsets.all(10),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                childAspectRatio: 1,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: userState.users.length,
-              itemBuilder: (context, index) {
-                final user = userState.users[index];
+      body: Consumer(
+        builder: (context, ref, child) {
+          final userState = ref.watch(userProvider);
 
-                return GestureDetector(
-                  onTap: () {
-                    _showEditDeleteOptions(context, user.id, user.username);
-                  },
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/images/user.png',
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          user.username,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+          if (userState.users.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(10),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 1,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
             ),
+            itemCount: userState.users.length,
+            itemBuilder: (context, index) {
+              final user = userState.users[index];
+
+              return GestureDetector(
+                onTap: () {
+                  _showEditDeleteOptions(context, user.id, user.username);
+                },
+                child: Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/user.png',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        user.username,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -123,14 +142,14 @@ class UserScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); 
+                Navigator.pop(context);
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); 
-                _deleteUser(context, userId); 
+                Navigator.pop(context);
+                _deleteUser(userId); // No pasa el contexto
               },
               child: const Text('Eliminar'),
             ),
@@ -140,11 +159,11 @@ class UserScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _deleteUser(BuildContext context, int userId) async {
+  Future<void> _deleteUser(int userId) async {
     try {
       final keyValueStorageService = KeyValueStorageServiceImpl();
       final token = await keyValueStorageService.getValue<String>('token');
-      
+
       final response = await http.delete(
         Uri.parse('https://apiproyectomonarca.fly.dev/api/usuarios/eliminar/$userId'),
         headers: {
@@ -154,6 +173,8 @@ class UserScreen extends ConsumerWidget {
       );
 
       if (response.statusCode == 200) {
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Usuario con ID $userId eliminado correctamente.'),
@@ -164,6 +185,8 @@ class UserScreen extends ConsumerWidget {
       }
     } catch (e) {
       print('Error: $e');
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Ocurrió un error al eliminar el usuario.'),

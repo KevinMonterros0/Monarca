@@ -180,6 +180,9 @@ class _UserScreenState extends ConsumerState<UserScreen> {
             content: Text('Usuario con ID $userId eliminado correctamente.'),
           ),
         );
+        
+        ref.read(userProvider.notifier).fetchUsers();
+        
       } else {
         throw Exception('Error al eliminar el usuario.');
       }

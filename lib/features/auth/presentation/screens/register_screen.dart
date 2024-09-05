@@ -154,7 +154,7 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
           const SizedBox(height: 60),
 
           items.isEmpty
-              ? CircularProgressIndicator()
+              ? const CircularProgressIndicator()
               : DropdownButton<MyItem>(
                   hint: Text('Empleado'),
                   value: selectedItem,
@@ -183,11 +183,13 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
                   final success = await notifier.onFormSubmit(selectedItem!.id);
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Usuario creado exitosamente')),
+                      const SnackBar(content: Text('Usuario creado exitosamente')),
                     );
+                      await Future.delayed(const Duration(seconds: 1));
+                    context.push('/users');
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error al crear usuario')),
+                      const SnackBar(content: Text('Error al crear usuario')),
                     );
                   }
                 } else {

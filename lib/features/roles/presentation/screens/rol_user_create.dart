@@ -83,34 +83,44 @@ class _RolUserCreateState extends ConsumerState<RolUserCreate> {
   }
 
   Future<void> assignRoleToUser(int userId, int roleId) async {
-    try {
-      final token = await keyValueStorageService.getValue<String>('token');
-      final response = await http.post(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/rolUsuarios/crear'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'Id_Usuario': userId,
-          'Id_Rol': roleId,
-        }),
-      );
+  try {
+    final token = await keyValueStorageService.getValue<String>('token');
+    final response = await http.post(
+      Uri.parse('https://apiproyectomonarca.fly.dev/api/rolUsuarios/crear'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'Id_Usuario': userId,
+        'Id_Rol': roleId,
+      }),
+    );
 
-      if (response.statusCode == 201) {
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Rol asignado correctamente a Usuario ID: $userId')),
+      );
+    } else if (response.statusCode == 400) {
+      final responseBody = json.decode(response.body);
+      if (responseBody['error'] == 'Permiso creado anteriormente') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Rol asignado correctamente a Usuario ID: $userId')),
+          const SnackBar(content: Text('Permiso ya fue creado anteriormente.')),
         );
       } else {
         throw Exception('Error al asignar el rol.');
       }
-    } catch (e) {
-      print('Error al asignar el rol: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al asignar el rol al usuario.')),
-      );
+    } else {
+      throw Exception('Error al asignar el rol.');
     }
+  } catch (e) {
+    print('Error al asignar el rol: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error al asignar el rol al usuario.')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

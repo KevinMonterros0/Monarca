@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:monarca/features/auth/presentation/providers/users_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
@@ -17,7 +16,6 @@ class _UserScreenState extends ConsumerState<UserScreen> {
   @override
   void initState() {
     super.initState();
-    // Llamada para buscar usuarios al iniciar la pantalla
     ref.read(userProvider.notifier).fetchUsers();
   }
 

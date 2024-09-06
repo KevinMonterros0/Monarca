@@ -69,7 +69,6 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
         'username': _username,
       };
 
-
       if (_password.isNotEmpty) {
         body['password'] = _password;
       }
@@ -88,14 +87,15 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Usuario actualizado exitosamente')),
         );
-        context.push('/users'); 
+        context.push('/users');
       } else {
         throw Exception('Error al actualizar el usuario.');
       }
     } catch (e) {
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ocurrió un error al actualizar el usuario.')),
+        const SnackBar(
+            content: Text('Ocurrió un error al actualizar el usuario.')),
       );
     }
   }
@@ -157,7 +157,6 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                                   Text('Modificar',
                                       style: textStyles.titleMedium),
                                   const SizedBox(height: 50),
-
                                   CustomTextFormField(
                                     label: 'Username',
                                     initialValue: _username,
@@ -168,7 +167,6 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                                     },
                                   ),
                                   const SizedBox(height: 30),
-
                                   CustomTextFormField(
                                     label: 'Contraseña',
                                     obscureText: !isPasswordVisible,
@@ -192,11 +190,14 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 50),
-
-                                  CustomFilledButton(
-                                    text: 'Actualizar',
-                                    buttonColor: const Color(0xFF283B71),
-                                    onPressed: updateUser,
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 60,
+                                    child: CustomFilledButton(
+                                      text: 'Actualizar',
+                                      buttonColor: const Color(0xFF283B71),
+                                      onPressed: updateUser,
+                                    ),
                                   ),
                                 ],
                               ),

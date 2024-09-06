@@ -6,6 +6,7 @@ import 'package:monarca/features/auth/presentation/providers/auth_provider.dart'
 import 'package:monarca/features/auth/presentation/screens/user_detail_screen.dart';
 import 'package:monarca/features/auth/presentation/screens/user_screen.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
+import 'package:monarca/features/roles/presentation/screens/rol_user_create.dart';
 import 'package:monarca/features/roles/presentation/screens/user_roles_screen.dart';
 
 
@@ -52,8 +53,15 @@ final goRouterProvider = Provider((ref){
         return UserRolesScreen(userId: userId);
       },
     ),
+    GoRoute(
+      path: '/userRolesCreate',
+      builder: (context, state) {
+        return const RolUserCreate();
+      },
+    ),
 
-    ///* Product Routes
+
+
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),

@@ -126,7 +126,8 @@ class SideMenuState extends ConsumerState<SideMenu> {
         return Icons.inventory;
       case 'sell':
         return Icons.sell;
-      // Agrega más casos según los iconos que utilices
+      case 'supervisor_account':
+        return Icons.supervisor_account;
       default:
         return Icons.help_outline;
     }

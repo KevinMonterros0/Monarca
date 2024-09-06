@@ -125,6 +125,14 @@ class _UserScreenState extends ConsumerState<UserScreen> {
                   _showDeleteConfirmationDialog(context, userId);
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.workspaces),
+                title: const Text('Roles'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/userRoles', extra: userId);
+                },
+              ),
             ],
           ),
         );
@@ -149,7 +157,7 @@ class _UserScreenState extends ConsumerState<UserScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                _deleteUser(userId); // No pasa el contexto
+                _deleteUser(userId);
               },
               child: const Text('Eliminar'),
             ),

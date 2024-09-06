@@ -22,7 +22,6 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
   bool isLoading = true;
   String _username = '';
   String _password = '';
-
   bool isPasswordVisible = false;
 
   @override
@@ -61,6 +60,46 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
     }
   }
 
+  Future<void> updateUser() async {
+    try {
+      final token =
+          await KeyValueStorageServiceImpl().getValue<String>('token');
+
+      final Map<String, dynamic> body = {
+        'username': _username,
+      };
+
+
+      if (_password.isNotEmpty) {
+        body['password'] = _password;
+      }
+
+      final response = await http.put(
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/usuarios/actualizar/${widget.userId}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Usuario actualizado exitosamente')),
+        );
+        context.push('/users'); 
+      } else {
+        throw Exception('Error al actualizar el usuario.');
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ocurrió un error al actualizar el usuario.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -96,7 +135,7 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                 ),
                 const SizedBox(height: 80),
                 Container(
-                  height: size.height - 260, 
+                  height: size.height - 260,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: scaffoldBackgroundColor,
@@ -157,9 +196,7 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                                   CustomFilledButton(
                                     text: 'Actualizar',
                                     buttonColor: const Color(0xFF283B71),
-                                    onPressed: () {
-
-                                    },
+                                    onPressed: updateUser,
                                   ),
                                 ],
                               ),

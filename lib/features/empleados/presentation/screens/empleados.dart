@@ -5,9 +5,8 @@ import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import 'package:monarca/features/auth/presentation/providers/users_provider.dart';
 
-
-
-final employeeProvider = StateNotifierProvider<EmployeeNotifier, EmployeeState>((ref) {
+final employeeProvider =
+    StateNotifierProvider<EmployeeNotifier, EmployeeState>((ref) {
   return EmployeeNotifier();
 });
 
@@ -18,7 +17,6 @@ class EmployeeNotifier extends StateNotifier<EmployeeState> {
     try {
       final token = await keyValueStorageService.getValue<String>('token');
       final response = await http.get(
-        
         Uri.parse('https://apiproyectomonarca.fly.dev/api/empleados/obtener'),
         headers: {
           'Authorization': 'Bearer $token',
@@ -81,8 +79,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add, size: 30),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -108,7 +105,8 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
 
               return GestureDetector(
                 onTap: () {
-                  _showEditDeleteOptions(context, employee['id_empleado'], employee['nombre']);
+                  _showEditDeleteOptions(
+                      context, employee['id_empleado'], employee['nombre']);
                 },
                 child: Card(
                   elevation: 2,
@@ -118,9 +116,11 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.person,
-                        size: 60,
+                      Image.asset(
+                        'assets/images/user.png',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
                       ),
                       const SizedBox(height: 10),
                       Text(
@@ -142,7 +142,8 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
     );
   }
 
-  void _showEditDeleteOptions(BuildContext context, int employeeId, String employeeName) {
+  void _showEditDeleteOptions(
+      BuildContext context, int employeeId, String employeeName) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -177,7 +178,8 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Confirmar eliminación'),
-          content: const Text('¿Estás seguro de que deseas eliminar este empleado?'),
+          content:
+              const Text('¿Estás seguro de que deseas eliminar este empleado?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -199,52 +201,52 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
   }
 
   Future<void> _deleteEmployee(int employeeId) async {
-  try {
-    final token = await keyValueStorageService.getValue<String>('token');
-    final response = await http.delete(
-      Uri.parse('https://apiproyectomonarca.fly.dev/api/empleados/eliminar/$employeeId'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final token = await keyValueStorageService.getValue<String>('token');
+      final response = await http.delete(
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/empleados/eliminar/$employeeId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Empleado con ID $employeeId eliminado correctamente.'),
+          ),
+        );
+
+        ref.read(employeeProvider.notifier).fetchEmployees();
+      } else if (response.statusCode == 400) {
+        final responseBody = json.decode(response.body);
+        final errorMessage =
+            responseBody['error'] ?? 'Error al eliminar el empleado.';
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+          ),
+        );
+      } else {
+        throw Exception('Error al eliminar el empleado.');
+      }
+    } catch (e) {
+      print('Error: $e');
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Empleado con ID $employeeId eliminado correctamente.'),
+        const SnackBar(
+          content: Text('Ocurrió un error al eliminar el empleado.'),
         ),
       );
-      
-      ref.read(employeeProvider.notifier).fetchEmployees();
-      
-    } else if (response.statusCode == 400) {
-      final responseBody = json.decode(response.body);
-      final errorMessage = responseBody['error'] ?? 'Error al eliminar el empleado.';
-      
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-        ),
-      );
-      
-    } else {
-      throw Exception('Error al eliminar el empleado.');
     }
-  } catch (e) {
-    print('Error: $e');
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Ocurrió un error al eliminar el empleado.'),
-      ),
-    );
   }
-}
-
 }

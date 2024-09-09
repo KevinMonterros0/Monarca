@@ -9,6 +9,7 @@ import 'package:monarca/features/empleados/presentation/screens/empleados.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_crear.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
+import 'package:monarca/features/roles/presentation/screens/rol_create.dart';
 import 'package:monarca/features/roles/presentation/screens/rol_user_create.dart';
 import 'package:monarca/features/roles/presentation/screens/roles.dart';
 import 'package:monarca/features/roles/presentation/screens/user_roles_screen.dart';
@@ -89,6 +90,13 @@ final goRouterProvider = Provider((ref){
       path: '/roles',
       builder: (context, state) {
         return const RolesScreen();
+      },
+    ),
+
+    GoRoute(
+      path: '/rolesCreate',
+      builder: (context, state) {
+        return const RolCreate();
       },
     ),
 

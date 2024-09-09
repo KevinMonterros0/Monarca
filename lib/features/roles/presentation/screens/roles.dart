@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
-final rolesProvider =
-    StateNotifierProvider<RolesNotifier, RolesState>((ref) {
+final rolesProvider = StateNotifierProvider<RolesNotifier, RolesState>((ref) {
   return RolesNotifier();
 });
 
@@ -57,9 +57,10 @@ class RolesScreen extends ConsumerStatefulWidget {
 }
 
 class _RolesScreenState extends ConsumerState<RolesScreen> {
+  
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     ref.read(rolesProvider.notifier).fetchRoles();
   }
 
@@ -77,6 +78,14 @@ class _RolesScreenState extends ConsumerState<RolesScreen> {
           },
         ),
         title: const Text('Roles'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add, size: 30),
+            onPressed: () {
+              context.push('/rolesCreate');
+            },
+          ),
+        ],
       ),
       body: Consumer(
         builder: (context, ref, child) {
@@ -163,7 +172,8 @@ class _RolesScreenState extends ConsumerState<RolesScreen> {
           await KeyValueStorageServiceImpl().getValue<String>('token');
 
       final response = await http.get(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/roles/obtenerEstados/$roleId'),
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/roles/obtenerEstados/$roleId'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -172,12 +182,13 @@ class _RolesScreenState extends ConsumerState<RolesScreen> {
 
       if (response.statusCode == 200) {
         final List<dynamic> estadoList = json.decode(response.body);
-        final bool currentState = estadoList.first['estado']; 
+        final bool currentState = estadoList.first['estado'];
 
         final newState = !currentState;
 
         final changeResponse = await http.put(
-          Uri.parse('https://apiproyectomonarca.fly.dev/api/roles/cambiarEstado/$roleId'),
+          Uri.parse(
+              'https://apiproyectomonarca.fly.dev/api/roles/cambiarEstado/$roleId'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',

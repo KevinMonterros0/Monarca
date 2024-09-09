@@ -155,6 +155,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
                 title: const Text('Editar'),
                 onTap: () {
                   Navigator.pop(context);
+                  context.push('/empleadosDetail', extra: employeeId);
                 },
               ),
               ListTile(

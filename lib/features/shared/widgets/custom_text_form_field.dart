@@ -10,6 +10,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? Function(String?)? validator;
   final Widget? suffixIcon;
   final String? initialValue;
+  final TextEditingController? controller; 
 
   const CustomTextFormField({
     super.key,
@@ -21,7 +22,8 @@ class CustomTextFormField extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.suffixIcon,
-    this.initialValue, 
+    this.initialValue,
+    this.controller, 
   });
 
   @override
@@ -50,7 +52,8 @@ class CustomTextFormField extends StatelessWidget {
         validator: validator,
         obscureText: obscureText,
         keyboardType: keyboardType,
-        initialValue: initialValue, 
+        initialValue: controller == null ? initialValue : null, 
+        controller: controller, 
         style: const TextStyle(fontSize: 20, color: Colors.black54),
         decoration: InputDecoration(
           floatingLabelStyle: const TextStyle(

@@ -82,7 +82,6 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
           IconButton(
             icon: const Icon(Icons.person_add, size: 30),
             onPressed: () {
-              // Lógica para agregar un nuevo empleado
             },
           ),
         ],
@@ -155,7 +154,6 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
                 title: const Text('Editar'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Lógica para editar el empleado
                 },
               ),
               ListTile(
@@ -201,39 +199,52 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
   }
 
   Future<void> _deleteEmployee(int employeeId) async {
-    try {
-      final token = await keyValueStorageService.getValue<String>('token');
-      final response = await http.delete(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/empleados/eliminar/$employeeId'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
+  try {
+    final token = await keyValueStorageService.getValue<String>('token');
+    final response = await http.delete(
+      Uri.parse('https://apiproyectomonarca.fly.dev/api/empleados/eliminar/$employeeId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
-      if (response.statusCode == 200) {
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Empleado con ID $employeeId eliminado correctamente.'),
-          ),
-        );
-        
-        ref.read(employeeProvider.notifier).fetchEmployees();
-        
-      } else {
-        throw Exception('Error al eliminar el empleado.');
-      }
-    } catch (e) {
-      print('Error: $e');
+    if (response.statusCode == 200) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ocurrió un error al eliminar el empleado.'),
+        SnackBar(
+          content: Text('Empleado con ID $employeeId eliminado correctamente.'),
         ),
       );
+      
+      ref.read(employeeProvider.notifier).fetchEmployees();
+      
+    } else if (response.statusCode == 400) {
+      final responseBody = json.decode(response.body);
+      final errorMessage = responseBody['error'] ?? 'Error al eliminar el empleado.';
+      
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+        ),
+      );
+      
+    } else {
+      throw Exception('Error al eliminar el empleado.');
     }
+  } catch (e) {
+    print('Error: $e');
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Ocurrió un error al eliminar el empleado.'),
+      ),
+    );
   }
+}
+
 }

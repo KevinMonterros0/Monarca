@@ -1,5 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:formz/formz.dart';
 import 'package:monarca/features/shared/infrastucture/inputs/confirm_password.dart';
 import 'package:monarca/features/shared/infrastucture/inputs/passwords.dart';
 import 'package:monarca/features/shared/infrastucture/inputs/usuario.dart';
@@ -9,8 +7,8 @@ class RegisterFormState {
   final bool isPosting;
   final bool isFormPosted;
   final bool isValid;
-  final bool isPasswordVisible; // Agregado
-  final bool isConfirmPasswordVisible; // Agregado
+  final bool isPasswordVisible; 
+  final bool isConfirmPasswordVisible;
   final Username username;
   final Passwords password;
   final ConfirmPassword confirmPassword;
@@ -19,8 +17,8 @@ class RegisterFormState {
     this.isPosting = false,
     this.isFormPosted = false,
     this.isValid = false,
-    this.isPasswordVisible = false, // Inicialización
-    this.isConfirmPasswordVisible = false, // Inicialización
+    this.isPasswordVisible = false, 
+    this.isConfirmPasswordVisible = false,
     this.username = const Username.pure(),
     this.password = const Passwords.pure(),
     this.confirmPassword = const ConfirmPassword.pure(password: ''),
@@ -30,8 +28,8 @@ class RegisterFormState {
     bool? isPosting,
     bool? isFormPosted,
     bool? isValid,
-    bool? isPasswordVisible, // Añadir a copyWith
-    bool? isConfirmPasswordVisible, // Añadir a copyWith
+    bool? isPasswordVisible,
+    bool? isConfirmPasswordVisible, 
     Username? username,
     Passwords? password,
     ConfirmPassword? confirmPassword,
@@ -40,8 +38,8 @@ class RegisterFormState {
       isPosting: isPosting ?? this.isPosting,
       isFormPosted: isFormPosted ?? this.isFormPosted,
       isValid: isValid ?? this.isValid,
-      isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible, // Manejo de propiedad
-      isConfirmPasswordVisible: isConfirmPasswordVisible ?? this.isConfirmPasswordVisible, // Manejo de propiedad
+      isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible, 
+      isConfirmPasswordVisible: isConfirmPasswordVisible ?? this.isConfirmPasswordVisible, 
       username: username ?? this.username,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,

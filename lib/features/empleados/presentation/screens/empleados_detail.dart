@@ -85,7 +85,6 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
   }
 
   Future<void> updateEmployee() async {
-    // Verificar si el formulario es válido
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, completa todos los campos')),

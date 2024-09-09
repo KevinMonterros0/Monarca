@@ -79,7 +79,9 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add, size: 30),
-            onPressed: () {},
+            onPressed: () {
+              context.push('/empleadosCreate');
+            },
           ),
         ],
       ),

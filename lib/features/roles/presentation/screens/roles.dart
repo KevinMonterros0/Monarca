@@ -57,7 +57,6 @@ class RolesScreen extends ConsumerStatefulWidget {
 }
 
 class _RolesScreenState extends ConsumerState<RolesScreen> {
-  
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -157,6 +156,15 @@ class _RolesScreenState extends ConsumerState<RolesScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   _toggleRoleState(roleId);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.menu),
+                title: const Text('Menú'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/rolesMenus',extra: roleId);
+                  
                 },
               ),
             ],

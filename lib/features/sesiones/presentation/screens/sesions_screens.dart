@@ -13,8 +13,10 @@ class SessionsScreen extends ConsumerStatefulWidget {
 }
 
 class _SessionsScreenState extends ConsumerState<SessionsScreen> {
-  List<dynamic> sessions = [];
+  List<dynamic> allSessions = [];
+  List<dynamic> filteredSessions = [];
   bool isLoading = true;
+  String selectedFilter = 'Hoy';
 
   @override
   void initState() {
@@ -37,12 +39,13 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
 
       if (response.statusCode == 200) {
         setState(() {
-          sessions = json.decode(response.body);
+          allSessions = json.decode(response.body);
           isLoading = false;
+          filterSessions(); // Filtrar las sesiones después de obtener los datos
         });
       } else if (response.statusCode == 404) {
         setState(() {
-          sessions = [];
+          allSessions = [];
           isLoading = false;
         });
       } else {
@@ -54,6 +57,36 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
       });
       print('Error: $e');
     }
+  }
+
+  void filterSessions() {
+    DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedFilter) {
+      case 'Hoy':
+        startDate = DateTime(now.year, now.month, now.day);
+        break;
+      case 'Ayer':
+        startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: 1));
+        break;
+      case 'Esta semana':
+        int weekday = now.weekday;
+        startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: weekday - 1));
+        break;
+      case 'Este mes':
+        startDate = DateTime(now.year, now.month, 1);
+        break;
+      default:
+        startDate = DateTime(now.year, now.month, now.day);
+    }
+
+    setState(() {
+      filteredSessions = allSessions.where((session) {
+        DateTime sessionDate = DateTime.parse(session['fec_hora_ini']);
+        return sessionDate.isAfter(startDate);
+      }).toList();
+    });
   }
 
   String formatDate(String dateString) {
@@ -74,55 +107,121 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         ),
         title: const Text('Sesiones'),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : sessions.isEmpty
-              ? const Center(child: Text('No hay sesiones disponibles.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(10),
-                  itemCount: sessions.length,
-                  itemBuilder: (context, index) {
-                    final session = sessions[index];
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButton<String>(
+              value: selectedFilter,
+              items: <String>['Hoy', 'Ayer', 'Esta semana', 'Este mes']
+                  .map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedFilter = newValue!;
+                  filterSessions(); // Filtrar cuando se cambia la selección
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredSessions.isEmpty
+                    ? const Center(child: Text('No hay sesiones disponibles.'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(10),
+                        itemCount: filteredSessions.length,
+                        itemBuilder: (context, index) {
+                          final session = filteredSessions[index];
 
-                    return GestureDetector(
-                      onTap: () {
-                      },
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Usuario: ${session['username']}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                          return GestureDetector(
+                            onTap: () {
+                              _showSessionDetails(context, session['id_sesion']);
+                            },
+                            child: Card(
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Usuario: ${session['username']}',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Inicio: ${formatDate(session['fec_hora_ini'])}',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Fin: ${formatDate(session['fec_hora_fin'])}',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 5),
-                              Text(
-                                'Inicio: ${formatDate(session['fec_hora_ini'])}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                'Fin: ${formatDate(session['fec_hora_fin'])}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
+          ),
+        ],
+      ),
     );
   }
 
- 
+  void _showSessionDetails(BuildContext context, int sessionId) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.info),
+                title: const Text('Detalles de la sesión'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showSessionInfoDialog(context, sessionId);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSessionInfoDialog(BuildContext context, int sessionId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Detalles de la sesión'),
+          content: Text('Información detallada de la sesión ID: $sessionId.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

@@ -14,127 +14,129 @@ import 'package:monarca/features/roles/presentation/screens/rol_user_create.dart
 import 'package:monarca/features/roles/presentation/screens/role_permison_screen.dart';
 import 'package:monarca/features/roles/presentation/screens/roles.dart';
 import 'package:monarca/features/roles/presentation/screens/user_roles_screen.dart';
+import 'package:monarca/features/sesiones/presentation/screens/sesions_screens.dart';
 
-
-final goRouterProvider = Provider((ref){
-
+final goRouterProvider = Provider((ref) {
   final goRouterNotifier = ref.read(goRouterNotifierProvider);
 
   return GoRouter(
-  initialLocation: '/splash',
-  refreshListenable: goRouterNotifier,
-  
-  routes: [
+    initialLocation: '/splash',
+    refreshListenable: goRouterNotifier,
+    routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const CheckAuthStatusScreen(),
+      ),
 
-  GoRoute(
-  path: '/splash',
-  builder: (context, state) => const CheckAuthStatusScreen(),
-  ),
-    ///* Auth Routes
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/registerusers',
-      builder: (context, state) => RegisterScreen(),
-    ),
-    GoRoute(
-      path: '/users',
-      builder: (context, state) => const UserScreen(),
-    ),
-    
-    GoRoute(
-      path: '/userDetail',
-      builder: (context, state) {
-        final userId = state.extra as int;
-        return UserDetailScreen(userId: userId);
-      },
-    ),
+      ///* Auth Routes
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/registerusers',
+        builder: (context, state) => RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/users',
+        builder: (context, state) => const UserScreen(),
+      ),
 
-    GoRoute(
-      path: '/userRoles',
-      builder: (context, state) {
-        final userId = state.extra as int;
-        return UserRolesScreen(userId: userId);
-      },
-    ),
-    GoRoute(
-      path: '/userRolesCreate',
-      builder: (context, state) {
-        return const RolUserCreate();
-      },
-    ),
-    GoRoute(
-      path: '/empleados',
-      builder: (context, state) {
-        return const EmployeesScreen();
-      },
-    ),
+      GoRoute(
+        path: '/userDetail',
+        builder: (context, state) {
+          final userId = state.extra as int;
+          return UserDetailScreen(userId: userId);
+        },
+      ),
 
-    GoRoute(
-      path: '/empleadosDetail',
-      builder: (context, state) {
-        final employeeId = state.extra as int;
-        return EmployeeDetailScreen(employeeId: employeeId);
-      },
-    ),
+      GoRoute(
+        path: '/userRoles',
+        builder: (context, state) {
+          final userId = state.extra as int;
+          return UserRolesScreen(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/userRolesCreate',
+        builder: (context, state) {
+          return const RolUserCreate();
+        },
+      ),
+      GoRoute(
+        path: '/empleados',
+        builder: (context, state) {
+          return const EmployeesScreen();
+        },
+      ),
 
-    GoRoute(
-      path: '/empleadosCreate',
-      builder: (context, state) {
-        return const CreateEmployeeScreen();
-      },
-    ),
+      GoRoute(
+        path: '/empleadosDetail',
+        builder: (context, state) {
+          final employeeId = state.extra as int;
+          return EmployeeDetailScreen(employeeId: employeeId);
+        },
+      ),
 
-    GoRoute(
-      path: '/roles',
-      builder: (context, state) {
-        return const RolesScreen();
-      },
-    ),
+      GoRoute(
+        path: '/empleadosCreate',
+        builder: (context, state) {
+          return const CreateEmployeeScreen();
+        },
+      ),
 
-    GoRoute(
-      path: '/rolesCreate',
-      builder: (context, state) {
-        return const RolCreate();
-      },
-    ),
+      GoRoute(
+        path: '/roles',
+        builder: (context, state) {
+          return const RolesScreen();
+        },
+      ),
 
-    GoRoute(
-      path: '/rolesMenus',
-      builder: (context, state) {
-        final roleId = state.extra as int;
-        return RolePermissionsScreen(roleId: roleId);
-      },
-    ),
+      GoRoute(
+        path: '/rolesCreate',
+        builder: (context, state) {
+          return const RolCreate();
+        },
+      ),
 
+      GoRoute(
+        path: '/rolesMenus',
+        builder: (context, state) {
+          final roleId = state.extra as int;
+          return RolePermissionsScreen(roleId: roleId);
+        },
+      ),
 
+      GoRoute(
+        path: '/sesions',
+        builder: (context, state) {
+          return const SessionsScreen();
+        },
+      ),
 
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const HomeScreen(),
-    ),
-  ],
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const HomeScreen(),
+      ),
+    ],
+    redirect: (context, state) {
+      final isGoingTo = state.matchedLocation;
+      final authStatus = goRouterNotifier.authStatus;
 
-  redirect: (context, state) {
-    final isGoingTo = state.matchedLocation;
-    final authStatus = goRouterNotifier.authStatus;
+      if (isGoingTo == '/splash' && authStatus == AuthStatus.checking)
+        return null;
 
-    if(isGoingTo == '/splash' && authStatus == AuthStatus.checking) return null;
+      if (authStatus == AuthStatus.noAuthenticated) {
+        if (isGoingTo == '/login') return null;
 
-    if(authStatus == AuthStatus.noAuthenticated){
-      if(isGoingTo == '/login') return null;
+        return '/login';
+      }
 
-      return '/login';
-    }
+      if (authStatus == AuthStatus.authenticated) {
+        if (isGoingTo == '/login' || isGoingTo == '/splash') return '/';
+      }
 
-    if(authStatus == AuthStatus.authenticated){
-      if(isGoingTo == '/login' || isGoingTo == '/splash') return '/';
-    }
-
-
-    return null;
-  },
-);
+      return null;
+    },
+  );
 });

@@ -45,6 +45,17 @@ class AuthDatasourceImpl extends AuthDatasource{
 
       await UserSession().setUsername(username); 
       await UserSession().setUserId(user.idUsuario); 
+      final response2 = await Dio().post(
+      'https://apiproyectomonarca.fly.dev/api/sesiones/crear',
+      data: {
+        'Id_usuario': user.idUsuario,
+      },
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
 
       return user;
     } on DioException catch (e) {

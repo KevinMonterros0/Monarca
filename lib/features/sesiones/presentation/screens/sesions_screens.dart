@@ -41,7 +41,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         setState(() {
           allSessions = json.decode(response.body);
           isLoading = false;
-          filterSessions(); // Filtrar las sesiones después de obtener los datos
+          filterSessions(); 
         });
       } else if (response.statusCode == 404) {
         setState(() {
@@ -66,6 +66,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     switch (selectedFilter) {
       case 'Hoy':
         startDate = DateTime(now.year, now.month, now.day);
+        print(now);
         break;
       case 'Ayer':
         startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: 1));
@@ -75,7 +76,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: weekday - 1));
         break;
       case 'Este mes':
-        startDate = DateTime(now.year, now.month, 1);
+        startDate = DateTime(now.year, now.month, -1);
         break;
       default:
         startDate = DateTime(now.year, now.month, now.day);

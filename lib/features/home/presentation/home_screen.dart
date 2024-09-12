@@ -18,34 +18,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _insertSesion(); 
   }
 
-Future<void> _insertSesion() async {
-  try {
-    final token = await keyValueStorageService.getValue<String>('token');
-    final userId = await UserSession().getUserId();
 
-    final response = await Dio().post(
-      'https://apiproyectomonarca.fly.dev/api/sesiones/crear',
-      data: {
-        'Id_usuario': userId,
-      },
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
-
-    if (response.statusCode != 201) {
-      throw CustomError('Error al crear la sesión: ${response.data}');
-    }
-  }catch(e){
-    print(e);
-  }
-}
 
 
   @override

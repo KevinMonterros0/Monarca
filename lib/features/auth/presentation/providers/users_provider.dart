@@ -14,13 +14,15 @@ class UserNotifier extends StateNotifier<UserState> {
     fetchUsers();
   }
 
+  List<User> allUsers = []; 
+
   Future<void> fetchUsers() async {
     try {
       final token = await keyValueStorageService.getValue<String>('token');
       final response = await http.get(
         Uri.parse('https://apiproyectomonarca.fly.dev/api/usuarios/obtener'),
         headers: {
-          'Authorization': 'Bearer $token', 
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
@@ -28,6 +30,7 @@ class UserNotifier extends StateNotifier<UserState> {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final List<User> users = data.map((user) => User.fromJson(user)).toList();
+        allUsers = users; 
         state = state.copyWith(users: users);
       } else {
         throw Exception('Error al obtener los usuarios');
@@ -36,7 +39,19 @@ class UserNotifier extends StateNotifier<UserState> {
       print('Error: $e');
     }
   }
+
+  void filterUsersByName(String query) {
+    if (query.isEmpty) {
+      state = state.copyWith(users: allUsers);
+    } else {
+      final filteredUsers = allUsers.where((user) {
+        return user.username.toLowerCase().contains(query.toLowerCase());
+      }).toList();
+      state = state.copyWith(users: filteredUsers);
+    }
+  }
 }
+
 
 class UserState {
   final List<User> users;

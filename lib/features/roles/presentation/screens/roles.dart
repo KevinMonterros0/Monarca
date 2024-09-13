@@ -11,6 +11,8 @@ final rolesProvider = StateNotifierProvider<RolesNotifier, RolesState>((ref) {
 });
 
 class RolesNotifier extends StateNotifier<RolesState> {
+  List<dynamic> allRoles = [];
+
   RolesNotifier() : super(RolesState());
 
   Future<void> fetchRoles() async {
@@ -27,12 +29,24 @@ class RolesNotifier extends StateNotifier<RolesState> {
 
       if (response.statusCode == 200) {
         final List<dynamic> rolesList = json.decode(response.body);
+        allRoles = rolesList;
         state = state.copyWith(roles: rolesList);
       } else {
         throw Exception('Error al obtener la lista de roles.');
       }
     } catch (e) {
       print('Error al obtener la lista de roles: $e');
+    }
+  }
+
+  void filterRolesByName(String query) {
+    if (query.isEmpty) {
+      state = state.copyWith(roles: allRoles);
+    } else {
+      final filteredRoles = allRoles.where((role) {
+        return role['nombre'].toLowerCase().contains(query.toLowerCase());
+      }).toList();
+      state = state.copyWith(roles: filteredRoles);
     }
   }
 }
@@ -57,6 +71,8 @@ class RolesScreen extends ConsumerStatefulWidget {
 }
 
 class _RolesScreenState extends ConsumerState<RolesScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -86,59 +102,79 @@ class _RolesScreenState extends ConsumerState<RolesScreen> {
           ),
         ],
       ),
-      body: Consumer(
-        builder: (context, ref, child) {
-          final rolesState = ref.watch(rolesProvider);
-
-          if (rolesState.roles.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(10),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: 1,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: 'Buscar por nombre',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                ref.read(rolesProvider.notifier).filterRolesByName(value);
+              },
             ),
-            itemCount: rolesState.roles.length,
-            itemBuilder: (context, index) {
-              final role = rolesState.roles[index];
+          ),
+          Expanded(
+            child: Consumer(
+              builder: (context, ref, child) {
+                final rolesState = ref.watch(rolesProvider);
 
-              return GestureDetector(
-                onTap: () {
-                  _showRoleOptions(context, role['id_rol'], role['nombre']);
-                },
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                if (rolesState.roles.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                return GridView.builder(
+                  padding: const EdgeInsets.all(10),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 1,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.security,
-                        size: 60,
-                        color: Colors.blueAccent,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        role['nombre'],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  itemCount: rolesState.roles.length,
+                  itemBuilder: (context, index) {
+                    final role = rolesState.roles[index];
+
+                    return GestureDetector(
+                      onTap: () {
+                        _showRoleOptions(context, role['id_rol'], role['nombre']);
+                      },
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        textAlign: TextAlign.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.security,
+                              size: 60,
+                              color: Colors.blueAccent,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              role['nombre'],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -163,8 +199,7 @@ class _RolesScreenState extends ConsumerState<RolesScreen> {
                 title: const Text('Menú'),
                 onTap: () {
                   Navigator.pop(context);
-                  context.push('/rolesMenus',extra: roleId);
-                  
+                  context.push('/rolesMenus', extra: roleId);
                 },
               ),
             ],

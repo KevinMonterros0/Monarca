@@ -26,7 +26,7 @@ class EmployeeNotifier extends StateNotifier<EmployeeState> {
 
       if (response.statusCode == 200) {
         final List<dynamic> employeeList = json.decode(response.body);
-        state = state.copyWith(employees: employeeList);
+        state = state.copyWith(employees: employeeList, filteredEmployees: employeeList);
       } else {
         throw Exception('Error al obtener la lista de empleados.');
       }
@@ -34,16 +34,31 @@ class EmployeeNotifier extends StateNotifier<EmployeeState> {
       print('Error al obtener la lista de empleados: $e');
     }
   }
+
+  void filterEmployeesByName(String query) {
+    final filtered = state.employees.where((employee) {
+      final nameLower = employee['nombre'].toLowerCase();
+      final searchLower = query.toLowerCase();
+      return nameLower.contains(searchLower);
+    }).toList();
+
+    state = state.copyWith(filteredEmployees: filtered);
+  }
 }
 
 class EmployeeState {
   final List<dynamic> employees;
+  final List<dynamic> filteredEmployees;
 
-  EmployeeState({this.employees = const []});
+  EmployeeState({
+    this.employees = const [],
+    this.filteredEmployees = const [],
+  });
 
-  EmployeeState copyWith({List<dynamic>? employees}) {
+  EmployeeState copyWith({List<dynamic>? employees, List<dynamic>? filteredEmployees}) {
     return EmployeeState(
       employees: employees ?? this.employees,
+      filteredEmployees: filteredEmployees ?? this.filteredEmployees,
     );
   }
 }
@@ -56,6 +71,8 @@ class EmployeesScreen extends ConsumerStatefulWidget {
 }
 
 class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -85,67 +102,86 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
           ),
         ],
       ),
-      body: Consumer(
-        builder: (context, ref, child) {
-          final employeeState = ref.watch(employeeProvider);
-
-          if (employeeState.employees.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(10),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: 1,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: 'Buscar por nombre',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                ref.read(employeeProvider.notifier).filterEmployeesByName(value);
+              },
             ),
-            itemCount: employeeState.employees.length,
-            itemBuilder: (context, index) {
-              final employee = employeeState.employees[index];
+          ),
+          Expanded(
+            child: Consumer(
+              builder: (context, ref, child) {
+                final employeeState = ref.watch(employeeProvider);
 
-              return GestureDetector(
-                onTap: () {
-                  _showEditDeleteOptions(
-                      context, employee['id_empleado'], employee['nombre']);
-                },
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                if (employeeState.filteredEmployees.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                return GridView.builder(
+                  padding: const EdgeInsets.all(10),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 1,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/user.png',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        employee['nombre'],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  itemCount: employeeState.filteredEmployees.length,
+                  itemBuilder: (context, index) {
+                    final employee = employeeState.filteredEmployees[index];
+
+                    return GestureDetector(
+                      onTap: () {
+                        _showEditDeleteOptions(
+                            context, employee['id_empleado'], employee['nombre']);
+                      },
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        textAlign: TextAlign.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/user.png',
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              employee['nombre'],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _showEditDeleteOptions(
-      BuildContext context, int employeeId, String employeeName) {
+  void _showEditDeleteOptions(BuildContext context, int employeeId, String employeeName) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -181,8 +217,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Confirmar eliminación'),
-          content:
-              const Text('¿Estás seguro de que deseas eliminar este empleado?'),
+          content: const Text('¿Estás seguro de que deseas eliminar este empleado?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -207,8 +242,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
     try {
       final token = await keyValueStorageService.getValue<String>('token');
       final response = await http.delete(
-        Uri.parse(
-            'https://apiproyectomonarca.fly.dev/api/empleados/eliminar/$employeeId'),
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/empleados/eliminar/$employeeId'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -220,16 +254,14 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('Empleado con ID $employeeId eliminado correctamente.'),
+            content: Text('Empleado con ID $employeeId eliminado correctamente.'),
           ),
         );
 
         ref.read(employeeProvider.notifier).fetchEmployees();
       } else if (response.statusCode == 400) {
         final responseBody = json.decode(response.body);
-        final errorMessage =
-            responseBody['error'] ?? 'Error al eliminar el empleado.';
+        final errorMessage = responseBody['error'] ?? 'Error al eliminar el empleado.';
 
         if (!mounted) return;
 

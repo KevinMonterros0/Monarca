@@ -9,11 +9,13 @@ import 'package:monarca/features/empleados/presentation/screens/empleados.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_crear.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
+import 'package:monarca/features/roles/presentation/screens/pol_permission_create.dart';
 import 'package:monarca/features/roles/presentation/screens/rol_create.dart';
 import 'package:monarca/features/roles/presentation/screens/rol_user_create.dart';
 import 'package:monarca/features/roles/presentation/screens/role_permison_screen.dart';
 import 'package:monarca/features/roles/presentation/screens/roles.dart';
 import 'package:monarca/features/roles/presentation/screens/user_roles_screen.dart';
+import 'package:monarca/features/roles/proveedores.dart';
 import 'package:monarca/features/sesiones/presentation/screens/sesions_screens.dart';
 
 final goRouterProvider = Provider((ref) {
@@ -113,6 +115,21 @@ final goRouterProvider = Provider((ref) {
           return const SessionsScreen();
         },
       ),
+
+      GoRoute(
+        path: '/rolePermissionsCreate',
+        builder: (context, state) {
+          return const RoleMenuScreen();
+        },
+      ),
+
+      GoRoute(
+        path: '/proveedores',
+        builder: (context, state) {
+          return const SupplierScreen();
+        },
+      ),
+
 
       GoRoute(
         path: '/',

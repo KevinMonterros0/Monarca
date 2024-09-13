@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
@@ -63,11 +64,25 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
     });
   }
 
+  Future<void> _navigateAndRefresh(BuildContext context) async {
+    final result = await context.push('/proveedoresCreate');
+    if (result == true) {
+      // Si se creó un proveedor, recargamos la lista
+      fetchSuppliers();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Proveedores'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add, size: 30),
+            onPressed: () => _navigateAndRefresh(context),
+          ),
+        ],
       ),
       body: Column(
         children: [

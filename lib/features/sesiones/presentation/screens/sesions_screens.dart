@@ -124,7 +124,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () => _selectDateRange(context),
-                  child: const Text('Seleccionar rango'),
+                  child: const Icon(Icons.calendar_month),
                 ),
               ],
             ),

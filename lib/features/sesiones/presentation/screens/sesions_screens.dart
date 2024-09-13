@@ -16,7 +16,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
   List<dynamic> allSessions = [];
   List<dynamic> filteredSessions = [];
   bool isLoading = true;
-  String selectedFilter = 'Hoy';
+  DateTimeRange? selectedDateRange;
 
   @override
   void initState() {
@@ -41,7 +41,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         setState(() {
           allSessions = json.decode(response.body);
           isLoading = false;
-          filterSessions(); 
+          filteredSessions = allSessions; 
         });
       } else if (response.statusCode == 404) {
         setState(() {
@@ -59,40 +59,41 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     }
   }
 
-  void filterSessions() {
-    DateTime now = DateTime.now();
-    DateTime startDate;
+  Future<void> _selectDateRange(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(now.year + 5),
+      initialDateRange: DateTimeRange(
+        start: now.subtract(const Duration(days: 7)), 
+        end: now,
+      ),
+    );
 
-    switch (selectedFilter) {
-      case 'Hoy':
-        startDate = DateTime(now.year, now.month, now.day);
-        print(now);
-        break;
-      case 'Ayer':
-        startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: 1));
-        break;
-      case 'Esta semana':
-        int weekday = now.weekday;
-        startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: weekday - 1));
-        break;
-      case 'Este mes':
-        startDate = DateTime(now.year, now.month, -1);
-        break;
-      default:
-        startDate = DateTime(now.year, now.month, now.day);
+    if (picked != null && picked != selectedDateRange) {
+      setState(() {
+        selectedDateRange = picked;
+        filterSessionsByDateRange();
+      });
     }
+  }
+
+  void filterSessionsByDateRange() {
+    if (selectedDateRange == null) return;
 
     setState(() {
       filteredSessions = allSessions.where((session) {
         DateTime sessionDate = DateTime.parse(session['fec_hora_ini']);
-        return sessionDate.isAfter(startDate);
+        return sessionDate.isAfter(selectedDateRange!.start) &&
+            sessionDate.isBefore(selectedDateRange!.end.add(const Duration(days: 1)));
       }).toList();
     });
   }
 
   String formatDate(String dateString) {
     final DateTime dateTime = DateTime.parse(dateString);
-    final DateFormat formatter = DateFormat('yyyy-MM-dd hh:mm:ss a'); // Formato con AM/PM
+    final DateFormat formatter = DateFormat('yyyy-MM-dd hh:mm:ss a'); 
     return formatter.format(dateTime);
   }
 
@@ -112,21 +113,20 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<String>(
-              value: selectedFilter,
-              items: <String>['Hoy', 'Ayer', 'Esta semana', 'Este mes']
-                  .map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedFilter = newValue!;
-                  filterSessions(); // Filtrar cuando se cambia la selección
-                });
-              },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  selectedDateRange == null
+                      ? 'Seleccione un rango de fechas'
+                      : 'Desde: ${DateFormat('yyyy-MM-dd').format(selectedDateRange!.start)} - Hasta: ${DateFormat('yyyy-MM-dd').format(selectedDateRange!.end)}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                ElevatedButton(
+                  onPressed: () => _selectDateRange(context),
+                  child: const Text('Seleccionar rango'),
+                ),
+              ],
             ),
           ),
           Expanded(

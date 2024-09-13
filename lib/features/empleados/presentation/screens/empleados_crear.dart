@@ -21,36 +21,40 @@ class CreateEmployeeScreen extends StatelessWidget {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         body: GeometricalBackground(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 80),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () => context.pop(),
-                      icon: const Icon(Icons.arrow_back_rounded, size: 40, color: Colors.white),
-                    ),
-                    const Spacer(flex: 1),
-                    Text('Crear empleado', style: textStyles.titleLarge?.copyWith(color: Colors.white)),
-                    const Spacer(flex: 2),
-                  ],
-                ),
-                const SizedBox(height: 50),
-                Container(
-                  height: size.height - 260,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 80),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () => context.pop(),
+                    icon: const Icon(Icons.arrow_back_rounded, size: 40, color: Colors.white),
+                  ),
+                  const Spacer(flex: 1),
+                  Text('Crear empleado', style: textStyles.titleLarge?.copyWith(color: Colors.white)),
+                  const Spacer(flex: 2),
+                ],
+              ),
+              const SizedBox(height: 50),
+              Expanded(
+                child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: scaffoldBackgroundColor,
                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(100)),
                   ),
-                  child: const _CreateEmployeeForm(),
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                      child: const _CreateEmployeeForm(),
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -71,8 +75,6 @@ class _CreateEmployeeFormState extends ConsumerState<_CreateEmployeeForm> {
   final TextEditingController _telefonoController = TextEditingController();
   final TextEditingController _direccionController = TextEditingController();
   final TextEditingController _correoController = TextEditingController();
-  
-  
   final TextEditingController _fechaNacimientoController = TextEditingController();
 
   DateTime? _fechaNacimiento;
@@ -87,7 +89,6 @@ class _CreateEmployeeFormState extends ConsumerState<_CreateEmployeeForm> {
     if (picked != null && picked != _fechaNacimiento) {
       setState(() {
         _fechaNacimiento = picked;
-    
         _fechaNacimientoController.text = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
       });
     }
@@ -110,8 +111,7 @@ class _CreateEmployeeFormState extends ConsumerState<_CreateEmployeeForm> {
       'correo': _correoController.text,
       'fec_nacimiento': _fechaNacimiento!.toIso8601String(),
     };
-    final token =
-          await KeyValueStorageServiceImpl().getValue<String>('token');
+    final token = await KeyValueStorageServiceImpl().getValue<String>('token');
     final response = await http.post(
       Uri.parse('https://apiproyectomonarca.fly.dev/api/empleados/crear'),
       headers: {
@@ -137,69 +137,66 @@ class _CreateEmployeeFormState extends ConsumerState<_CreateEmployeeForm> {
   Widget build(BuildContext context) {
     final textStyles = Theme.of(context).textTheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 50),
-      child: Column(
-        children: [
-          const SizedBox(height: 50),
-          Text('Nuevo empleado', style: textStyles.titleMedium),
-          const SizedBox(height: 50),
+    return Column(
+      children: [
+        const SizedBox(height: 50),
+        Text('Nuevo empleado', style: textStyles.titleMedium),
+        const SizedBox(height: 50),
 
-          CustomTextFormField(
-            label: 'Nombre',
-            controller: _nameController,
-          ),
-          const SizedBox(height: 30),
+        CustomTextFormField(
+          label: 'Nombre',
+          controller: _nameController,
+        ),
+        const SizedBox(height: 30),
 
-          CustomTextFormField(
-            label: 'DPI',
-            controller: _dpiController,
-          ),
-          const SizedBox(height: 30),
+        CustomTextFormField(
+          label: 'DPI',
+          controller: _dpiController,
+        ),
+        const SizedBox(height: 30),
 
-          CustomTextFormField(
-            label: 'Teléfono',
-            controller: _telefonoController,
-          ),
-          const SizedBox(height: 30),
+        CustomTextFormField(
+          label: 'Teléfono',
+          controller: _telefonoController,
+        ),
+        const SizedBox(height: 30),
 
-          CustomTextFormField(
-            label: 'Dirección',
-            controller: _direccionController,
-          ),
-          const SizedBox(height: 30),
+        CustomTextFormField(
+          label: 'Dirección',
+          controller: _direccionController,
+        ),
+        const SizedBox(height: 30),
 
-          CustomTextFormField(
-            label: 'Correo',
-            keyboardType: TextInputType.emailAddress,
-            controller: _correoController,
-          ),
-          const SizedBox(height: 30),
+        CustomTextFormField(
+          label: 'Correo',
+          keyboardType: TextInputType.emailAddress,
+          controller: _correoController,
+        ),
+        const SizedBox(height: 30),
 
-          GestureDetector(
-            onTap: () => _selectDate(context),
-            child: AbsorbPointer(
-              child: CustomTextFormField(
-                label: 'Fecha de Nacimiento',
-                controller: _fechaNacimientoController, 
-                hint: 'Selecciona una fecha',
-              ),
+        GestureDetector(
+          onTap: () => _selectDate(context),
+          child: AbsorbPointer(
+            child: CustomTextFormField(
+              label: 'Fecha de Nacimiento',
+              controller: _fechaNacimientoController,
+              hint: 'Selecciona una fecha',
             ),
           ),
-          const SizedBox(height: 50),
+        ),
+        const SizedBox(height: 50),
 
-          SizedBox(
-            width: double.infinity,
-            height: 60,
-            child: CustomFilledButton(
-              text: 'Crear',
-              buttonColor: const Color(0xFF283B71),
-              onPressed: createEmployee,
-            ),
+        SizedBox(
+          width: double.infinity,
+          height: 60,
+          child: CustomFilledButton(
+            text: 'Crear',
+            buttonColor: const Color(0xFF283B71),
+            onPressed: createEmployee,
           ),
-          const Spacer(),
-        ],
-      ),
+        ),
+        const SizedBox(height: 50),
+      ],
     );
   }
 }

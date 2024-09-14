@@ -52,6 +52,33 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
     }
   }
 
+  Future<void> deleteSupplier(int supplierId) async {
+    try {
+      final token = await KeyValueStorageServiceImpl().getValue<String>('token');
+      final response = await http.delete(
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/proveedores/eliminar/$supplierId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Proveedor eliminado correctamente.')),
+        );
+        fetchSuppliers();  
+      } else {
+        throw Exception('Error al eliminar el proveedor.');
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al eliminar el proveedor.')),
+      );
+    }
+  }
+
   void filterSuppliers(String query) {
     setState(() {
       filteredSuppliers = suppliers.where((supplier) {
@@ -64,13 +91,6 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
     });
   }
 
-  Future<void> _navigateAndRefresh(BuildContext context) async {
-    final result = await context.push('/proveedoresCreate');
-    if (result == true) {
-      fetchSuppliers();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +99,9 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add, size: 30),
-            onPressed: () => _navigateAndRefresh(context),
+            onPressed: () {
+              context.push('/proveedoresCreate');
+            },
           ),
         ],
       ),
@@ -114,6 +136,10 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
                               leading: const Icon(Icons.business),
                               title: Text(supplier['nombre']),
                               subtitle: Text('Teléfono: ${supplier['telefono']}'),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _showDeleteConfirmationDialog(context, supplier['id_proveedor']),
+                              ),
                             ),
                           );
                         },
@@ -121,6 +147,33 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, int supplierId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirmar eliminación'),
+          content: const Text('¿Estás seguro de que deseas eliminar este proveedor?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);  
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);  
+                deleteSupplier(supplierId);  
+              },
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

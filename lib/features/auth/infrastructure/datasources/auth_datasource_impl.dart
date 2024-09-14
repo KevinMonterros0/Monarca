@@ -9,7 +9,7 @@ class AuthDatasourceImpl extends AuthDatasource{
 
   final dio = Dio(
     BaseOptions(
-      baseUrl: Environment.apiUrl,
+      baseUrl: 'https://apiproyectomonarca.fly.dev/api',
     )
   );
 

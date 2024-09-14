@@ -150,12 +150,12 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
             ),
           ),
           const SizedBox(height: 30),
-          if (isBiometricSupported) ...[
-            TextButton(
-              onPressed: _authenticateWithBiometrics,
-              child: const Text('Usar autenticación biométrica'),
-            ),
-          ],
+          //if (isBiometricSupported) ...[
+          //  TextButton(
+            //  onPressed: _authenticateWithBiometrics,
+            //  child: const Text('Usar autenticación biométrica'),
+           // ),
+         // ],
           const Spacer(flex: 2),
           const Spacer(flex: 1),
         ],

@@ -67,7 +67,6 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
   Future<void> _navigateAndRefresh(BuildContext context) async {
     final result = await context.push('/proveedoresCreate');
     if (result == true) {
-      // Si se creó un proveedor, recargamos la lista
       fetchSuppliers();
     }
   }

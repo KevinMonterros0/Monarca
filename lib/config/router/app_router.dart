@@ -5,6 +5,7 @@ import 'package:monarca/features/auth/auth.dart';
 import 'package:monarca/features/auth/presentation/providers/auth_provider.dart';
 import 'package:monarca/features/auth/presentation/screens/user_detail_screen.dart';
 import 'package:monarca/features/auth/presentation/screens/user_screen.dart';
+import 'package:monarca/features/clientes/presentation/screens/clientes.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_crear.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
@@ -135,6 +136,13 @@ final goRouterProvider = Provider((ref) {
         path: '/proveedoresCreate',
         builder: (context, state) {
           return const CreateSupplierScreen();
+        },
+      ),
+
+      GoRoute(
+        path: '/clientes',
+        builder: (context, state) {
+          return const CustomerScreen();
         },
       ),
 

@@ -132,8 +132,8 @@ class SideMenuState extends ConsumerState<SideMenu> {
         return Icons.badge;
       case 'av_timer':
         return Icons.av_timer;
-      case 'inventory':
-        return Icons.inventory;
+      case 'face':
+        return Icons.face;    
       default:
         return Icons.help_outline;
     }

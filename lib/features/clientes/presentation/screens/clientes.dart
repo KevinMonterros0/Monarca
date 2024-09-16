@@ -88,7 +88,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 30),
           onPressed: () {
-            context.push('/');
+            context.pop();
           },
         ),
         title: const Text('Clientes'),
@@ -201,6 +201,14 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                   _toggleCustomerState(customerId);
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.directions),
+                title: const Text('Direcciones'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/direccionesCliente', extra: customerId);
+                },
+              ),
             ],
           ),
         );
@@ -254,6 +262,4 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       );
     }
   }
-
-
 }

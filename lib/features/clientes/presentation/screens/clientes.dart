@@ -186,6 +186,14 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
           child: Wrap(
             children: [
               ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Editar'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/clientesDetail', extra: customerId);
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.toggle_on),
                 title: const Text('Activar / Inactivar'),
                 onTap: () {
@@ -222,7 +230,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
 
       if (response.statusCode == 200) {
         final List<dynamic> estadoList = json.decode(response.body);
-        final bool currentState = estadoList.first['status'];
+        final bool currentState = estadoList.first['estado'];
 
         final newState = !currentState;
 
@@ -232,7 +240,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
           },
-          body: jsonEncode({'status': newState}),
+          body: jsonEncode({'estado': newState}),
         );
 
         if (changeResponse.statusCode == 200) {

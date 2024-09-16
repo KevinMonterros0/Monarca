@@ -104,12 +104,12 @@ class _CreateEmployeeFormState extends ConsumerState<_CreateEmployeeForm> {
     }
 
     final Map<String, dynamic> employeeData = {
-      'nombre': _nameController.text,
-      'dpi': _dpiController.text,
-      'telefono': _telefonoController.text,
-      'direccion': _direccionController.text,
-      'correo': _correoController.text,
-      'fec_nacimiento': _fechaNacimiento!.toIso8601String(),
+      'Nombre': _nameController.text,
+      'DPI': _dpiController.text,
+      'Telefono': _telefonoController.text,
+      'Direccion': _direccionController.text,
+      'Correo': _correoController.text,
+      'Fec_nacimiento': _fechaNacimiento!.toIso8601String(),
     };
     final token = await KeyValueStorageServiceImpl().getValue<String>('token');
     final response = await http.post(

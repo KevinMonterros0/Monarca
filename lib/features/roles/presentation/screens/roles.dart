@@ -89,7 +89,7 @@ class _RolesScreenState extends ConsumerState<RolesScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 30),
           onPressed: () {
-            context.pop('/');
+            context.push('/');
           },
         ),
         title: const Text('Roles'),

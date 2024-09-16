@@ -201,14 +201,6 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                   _toggleCustomerState(customerId);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.delete),
-                title: const Text('Eliminar'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showDeleteConfirmationDialog(context, customerId);
-                },
-              ),
             ],
           ),
         );
@@ -263,57 +255,5 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
     }
   }
 
-  Future<void> _deleteCustomer(int customerId) async {
-    try {
-      final token = await KeyValueStorageServiceImpl().getValue<String>('token');
-      final response = await http.delete(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/clientes/eliminar/$customerId'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
 
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cliente eliminado correctamente.')),
-        );
-        ref.read(customersProvider.notifier).fetchCustomers();
-      } else {
-        throw Exception('Error al eliminar el cliente.');
-      }
-    } catch (e) {
-      print('Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al eliminar el cliente.')),
-      );
-    }
-  }
-
-  void _showDeleteConfirmationDialog(BuildContext context, int customerId) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Confirmar eliminación'),
-          content: const Text('¿Estás seguro de que deseas eliminar este cliente?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _deleteCustomer(customerId);
-              },
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

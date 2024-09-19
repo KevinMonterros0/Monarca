@@ -68,9 +68,9 @@ class _ClienteDetailScreenState extends ConsumerState<ClienteDetailScreen> {
         final token = await KeyValueStorageServiceImpl().getValue<String>('token');
 
         final Map<String, dynamic> body = {
-          'nombre': _nombre,
-          'nit': _nit,
-          'telefono': _telefono,
+          'Nombre': _nombre,
+          'Nit': _nit,
+          'Telefono': _telefono,
         };
 
         final response = await http.put(

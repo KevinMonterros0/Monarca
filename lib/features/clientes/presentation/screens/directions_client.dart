@@ -79,7 +79,7 @@ class _DireccionesScreenState extends ConsumerState<DireccionesScreen> {
           body: jsonEncode({'estado': newState}),
         );
 
-        if (changeResponse. statusCode == 200) {
+        if (changeResponse.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('El estado de la dirección se ha actualizado a $newState')),
           );
@@ -131,6 +131,14 @@ class _DireccionesScreenState extends ConsumerState<DireccionesScreen> {
             context.pop();
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.directions_sharp, size: 30),
+            onPressed: () {
+              context.push('/direccionesClienteCreate');
+            },
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -141,7 +149,9 @@ class _DireccionesScreenState extends ConsumerState<DireccionesScreen> {
                   itemCount: direcciones.length,
                   itemBuilder: (context, index) {
                     final direccion = direcciones[index];
+                    final bool isActive = direccion['estado'] ?? true; 
                     return Card(
+                      color: isActive ? Colors.white : Colors.grey[300], 
                       elevation: 2,
                       margin: const EdgeInsets.symmetric(vertical: 10),
                       child: ListTile(

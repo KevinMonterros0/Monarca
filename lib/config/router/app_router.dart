@@ -8,6 +8,7 @@ import 'package:monarca/features/auth/presentation/screens/user_screen.dart';
 import 'package:monarca/features/clientes/presentation/screens/clientes.dart';
 import 'package:monarca/features/clientes/presentation/screens/clientes_create.dart';
 import 'package:monarca/features/clientes/presentation/screens/clientes_detail_screen.dart';
+import 'package:monarca/features/clientes/presentation/screens/clientes_directions_create.dart';
 import 'package:monarca/features/clientes/presentation/screens/directions_client.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_crear.dart';
@@ -169,6 +170,13 @@ final goRouterProvider = Provider((ref) {
         builder: (context, state) {
           final clienteId = state.extra as int;
           return DireccionesScreen(idCliente: clienteId);
+        },
+      ),
+
+      GoRoute(
+        path: '/direccionesClienteCreate',
+        builder: (context, state) {
+          return const ConnectAddressCustomerScreen();
         },
       ),
       

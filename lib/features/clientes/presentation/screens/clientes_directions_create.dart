@@ -3,36 +3,72 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:monarca/features/shared/widgets/custom_filled_button.dart';
+import 'package:monarca/features/shared/widgets/custom_text_form_field.dart';
 import 'package:monarca/features/shared/widgets/geometrical_background.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
 class ConnectAddressCustomerScreen extends ConsumerStatefulWidget {
-  const ConnectAddressCustomerScreen({super.key});
+  final int idCliente; 
+
+  const ConnectAddressCustomerScreen({super.key, required this.idCliente});
 
   @override
-  _ConnectAddressCustomerScreenState createState() => _ConnectAddressCustomerScreenState();
+  _ConnectAddressCustomerScreenState createState() =>
+      _ConnectAddressCustomerScreenState();
 }
 
-class _ConnectAddressCustomerScreenState extends ConsumerState<ConnectAddressCustomerScreen> {
-  List<dynamic> customers = [];
-  List<dynamic> addresses = [];
-  int? selectedCustomerId;  
-  int? selectedAddressId; 
-  bool isLoadingCustomers = true;
-  bool isLoadingAddresses = true;
+class _ConnectAddressCustomerScreenState
+    extends ConsumerState<ConnectAddressCustomerScreen> {
+  final TextEditingController _addressController = TextEditingController();
+  List<dynamic> departamentos = [];
+  List<dynamic> municipios = [];
+  List<dynamic> zonas = [];
+  dynamic selectedDepartamento;
+  dynamic selectedMunicipio;
+  dynamic selectedZona;
+  bool isLoadingDepartments = true;
+  bool isLoadingZones = true;
+  bool isLoadingMunicipios = true;
 
   @override
   void initState() {
     super.initState();
-    fetchCustomers();
-    fetchAddresses();
+    fetchZonas(); 
+    fetchDepartamentos(); 
   }
 
-  Future<void> fetchCustomers() async {
+  Future<void> fetchDepartamentos() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/regiones/departamentos/obtener'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          departamentos = json.decode(response.body);
+          isLoadingDepartments = false;
+        });
+      } else {
+        throw Exception('Error al obtener los departamentos.');
+      }
+    } catch (e) {
+      setState(() {
+        isLoadingDepartments = false;
+      });
+      print('Error al obtener los departamentos: $e');
+    }
+  }
+
+  // Función para obtener las zonas
+  Future<void> fetchZonas() async {
     try {
       final token = await KeyValueStorageServiceImpl().getValue<String>('token');
       final response = await http.get(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/clientes/obtener'),
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/regiones/zonas/numeros'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -41,48 +77,57 @@ class _ConnectAddressCustomerScreenState extends ConsumerState<ConnectAddressCus
 
       if (response.statusCode == 200) {
         setState(() {
-          customers = json.decode(response.body);
-          isLoadingCustomers = false;
+          zonas = json.decode(response.body);
+          isLoadingZones = false;
         });
       } else {
-        throw Exception('Error al obtener los clientes.');
+        throw Exception('Error al obtener las zonas.');
       }
     } catch (e) {
       setState(() {
-        isLoadingCustomers = false;
+        isLoadingZones = false;
       });
-      print('Error al obtener los clientes: $e');
+      print('Error al obtener las zonas: $e');
     }
   }
 
-  Future<void> fetchAddresses() async {
+  Future<void> fetchMunicipios(int idDepartamento) async {
     try {
-      final token = await KeyValueStorageServiceImpl().getValue<String>('token');
       final response = await http.get(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/direcciones/obtener'),
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/regiones/municipios/obtenerPorDepartamento/$idDepartamento'),
         headers: {
-          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
       if (response.statusCode == 200) {
         setState(() {
-          addresses = json.decode(response.body);
-          isLoadingAddresses = false;
+          municipios = json.decode(response.body);
+          isLoadingMunicipios = false;
         });
       } else {
-        throw Exception('Error al obtener las direcciones.');
+        throw Exception('Error al obtener los municipios.');
       }
     } catch (e) {
       setState(() {
-        isLoadingAddresses = false;
+        isLoadingMunicipios = false;
       });
-      print('Error al obtener las direcciones: $e');
+      print('Error al obtener los municipios: $e');
     }
   }
 
-  Future<void> assignAddressToCustomer(int customerId, int addressId) async {
+  Future<void> assignAddressToCustomer() async {
+    if (_addressController.text.isEmpty ||
+        selectedDepartamento == null ||
+        selectedMunicipio == null ||
+        selectedZona == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor completa todos los campos')),
+      );
+      return;
+    }
+
     try {
       final token = await KeyValueStorageServiceImpl().getValue<String>('token');
       final response = await http.post(
@@ -92,8 +137,11 @@ class _ConnectAddressCustomerScreenState extends ConsumerState<ConnectAddressCus
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'id_cliente': customerId,
-          'id_direccion': addressId,
+          'id_cliente': widget.idCliente,
+          'direccion': _addressController.text,
+          'departamento': selectedDepartamento['idDepartamento'],
+          'municipio': selectedMunicipio,
+          'zona': selectedZona,
         }),
       );
 
@@ -116,6 +164,7 @@ class _ConnectAddressCustomerScreenState extends ConsumerState<ConnectAddressCus
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final scaffoldBackgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
 
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -135,11 +184,11 @@ class _ConnectAddressCustomerScreenState extends ConsumerState<ConnectAddressCus
                       icon: const Icon(Icons.arrow_back_rounded, size: 40, color: Colors.white),
                     ),
                     const Spacer(flex: 1),
-                    const Text(
-                      'Asignar Dirección a Cliente',
+                    Text(
+                      'Asignar Dirección',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 30,
+                        fontSize: 30 * textScaleFactor, 
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -158,78 +207,77 @@ class _ConnectAddressCustomerScreenState extends ConsumerState<ConnectAddressCus
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
-                        const SizedBox(height: 50),
-                        // Listado de Clientes
-                        isLoadingCustomers
+                        const SizedBox(height: 60),
+                        SizedBox(
+                          width: double.infinity,
+                          child: CustomTextFormField(
+                            label: 'Dirección',
+                            controller: _addressController,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        isLoadingZones
                             ? const CircularProgressIndicator()
-                            : Expanded(
-                                child: ListView.builder(
-                                  itemCount: customers.length,
-                                  itemBuilder: (context, index) {
-                                    final customer = customers[index];
-                                    return Card(
-                                      elevation: 2,
-                                      child: ListTile(
-                                        title: Text(customer['nombre']),
-                                        leading: Radio<int>(
-                                          value: customer['id_cliente'],
-                                          groupValue: selectedCustomerId,
-                                          onChanged: (int? value) {
-                                            setState(() {
-                                              selectedCustomerId = value;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
+                            : DropdownButton<dynamic>(
+                                hint: Text('Elige una zona', style: TextStyle(fontSize: 16 * textScaleFactor)),
+                                value: selectedZona,
+                                onChanged: (dynamic newValue) {
+                                  setState(() {
+                                    selectedZona = newValue;
+                                  });
+                                },
+                                items: zonas.map<DropdownMenuItem<dynamic>>((zona) {
+                                  return DropdownMenuItem<dynamic>(
+                                    value: zona['numero'],
+                                    child: Text('Zona ${zona['numero']}', style: TextStyle(fontSize: 16 * textScaleFactor)),
+                                  );
+                                }).toList(),
                               ),
                         const SizedBox(height: 30),
-                        // Listado de Direcciones
-                        isLoadingAddresses
+                        isLoadingDepartments
                             ? const CircularProgressIndicator()
-                            : Expanded(
-                                child: ListView.builder(
-                                  itemCount: addresses.length,
-                                  itemBuilder: (context, index) {
-                                    final address = addresses[index];
-                                    return Card(
-                                      elevation: 2,
-                                      child: ListTile(
-                                        title: Text(address['direccion']),
-                                        leading: Radio<int>(
-                                          value: address['id_direccion'],
-                                          groupValue: selectedAddressId,
-                                          onChanged: (int? value) {
-                                            setState(() {
-                                              selectedAddressId = value;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
+                            : DropdownButton<dynamic>(
+                                hint: Text('Elige un departamento', style: TextStyle(fontSize: 16 * textScaleFactor)),
+                                value: selectedDepartamento,
+                                onChanged: (dynamic newValue) {
+                                  setState(() {
+                                    selectedDepartamento = newValue;
+                                    selectedMunicipio = null; 
+                                    fetchMunicipios(newValue['iddepartamento']); 
+                                  });
+                                },
+                                items: departamentos.map<DropdownMenuItem<dynamic>>((departamento) {
+                                  return DropdownMenuItem<dynamic>(
+                                    value: departamento,
+                                    child: Text(departamento['nombre'], style: TextStyle(fontSize: 16 * textScaleFactor)),
+                                  );
+                                }).toList(),
                               ),
                         const SizedBox(height: 30),
-                        // Botón de Confirmar
+                        isLoadingMunicipios
+                            ? const CircularProgressIndicator()
+                            : DropdownButton<dynamic>(
+                                hint: Text('Elige un municipio', style: TextStyle(fontSize: 16 * textScaleFactor)),
+                                value: selectedMunicipio,
+                                onChanged: (dynamic newValue) {
+                                  setState(() {
+                                    selectedMunicipio = newValue;
+                                  });
+                                },
+                                items: municipios.map<DropdownMenuItem<dynamic>>((municipio) {
+                                  return DropdownMenuItem<dynamic>(
+                                    value: municipio['nombre'],
+                                    child: Text(municipio['nombre'], style: TextStyle(fontSize: 16 * textScaleFactor)),
+                                  );
+                                }).toList(),
+                              ),
+                        const SizedBox(height: 60),
                         SizedBox(
                           width: double.infinity,
                           height: 40,
                           child: CustomFilledButton(
                             text: 'Confirmar',
-                            onPressed: () {
-                              if (selectedCustomerId != null && selectedAddressId != null) {
-                                assignAddressToCustomer(selectedCustomerId!, selectedAddressId!);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Selecciona un cliente y una dirección.'),
-                                  ),
-                                );
-                              }
-                            },
+                            onPressed: assignAddressToCustomer,
                           ),
                         ),
                       ],

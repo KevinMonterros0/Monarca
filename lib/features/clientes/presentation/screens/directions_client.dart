@@ -135,7 +135,7 @@ class _DireccionesScreenState extends ConsumerState<DireccionesScreen> {
           IconButton(
             icon: const Icon(Icons.directions_sharp, size: 30),
             onPressed: () {
-              context.push('/direccionesClienteCreate');
+              context.push('/direccionesClienteCreate', extra: widget.idCliente);
             },
           ),
         ],
@@ -149,9 +149,9 @@ class _DireccionesScreenState extends ConsumerState<DireccionesScreen> {
                   itemCount: direcciones.length,
                   itemBuilder: (context, index) {
                     final direccion = direcciones[index];
-                    final bool isActive = direccion['estado'] ?? true; 
+                    final bool isActive = direccion['estado'] ?? true;
                     return Card(
-                      color: isActive ? Colors.white : Colors.grey[300], 
+                      color: isActive ? Colors.white : Colors.grey[300],
                       elevation: 2,
                       margin: const EdgeInsets.symmetric(vertical: 10),
                       child: ListTile(

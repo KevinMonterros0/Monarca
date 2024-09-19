@@ -176,7 +176,8 @@ final goRouterProvider = Provider((ref) {
       GoRoute(
         path: '/direccionesClienteCreate',
         builder: (context, state) {
-          return const ConnectAddressCustomerScreen();
+          final clienteId = state.extra as int;
+          return ConnectAddressCustomerScreen(idCliente: clienteId);
         },
       ),
       

@@ -132,7 +132,7 @@ final goRouterProvider = Provider((ref) {
       GoRoute(
         path: '/proveedores',
         builder: (context, state) {
-          return const SupplierScreen();
+          return const SupplierProductScreen();
         },
       ),
 

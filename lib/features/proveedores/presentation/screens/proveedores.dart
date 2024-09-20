@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:go_router/go_router.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
-class SupplierScreen extends ConsumerStatefulWidget {
-  const SupplierScreen({super.key});
+class SupplierProductScreen extends ConsumerStatefulWidget {
+  const SupplierProductScreen({Key? key}) : super(key: key);
 
   @override
-  _SupplierScreenState createState() => _SupplierScreenState();
+  _SupplierProductScreenState createState() => _SupplierProductScreenState();
 }
 
-class _SupplierScreenState extends ConsumerState<SupplierScreen> {
+class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
+  final TextEditingController _searchController = TextEditingController();
   List<dynamic> suppliers = [];
   List<dynamic> filteredSuppliers = [];
   bool isLoading = true;
-  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -52,11 +52,22 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
     }
   }
 
-  Future<void> deleteSupplier(int supplierId) async {
+  void filterSuppliers(String query) {
+    setState(() {
+      filteredSuppliers = suppliers.where((supplier) {
+        final nameLower = supplier['nombre'].toLowerCase();
+        final phoneLower = supplier['telefono'].toString().toLowerCase();
+        final queryLower = query.toLowerCase();
+        return nameLower.contains(queryLower) || phoneLower.contains(queryLower);
+      }).toList();
+    });
+  }
+
+  Future<void> fetchProductsBySupplier(int supplierId) async {
     try {
       final token = await KeyValueStorageServiceImpl().getValue<String>('token');
-      final response = await http.delete(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/proveedores/eliminar/$supplierId'),
+      final response = await http.get(
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/productos/obtenerPorProveedores/$supplierId'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -64,43 +75,32 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Proveedor eliminado correctamente.')),
-        );
-        fetchSuppliers();  
+        final products = json.decode(response.body);
+        _showProductList(context, products);
       } else {
-        throw Exception('Error al eliminar el proveedor.');
+        throw Exception('Error al obtener la lista de productos.');
       }
     } catch (e) {
       print('Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al eliminar el proveedor.')),
-      );
     }
-  }
-
-  void filterSuppliers(String query) {
-    setState(() {
-      filteredSuppliers = suppliers.where((supplier) {
-        final nameLower = supplier['nombre'].toLowerCase();
-        final phoneLower = supplier['telefono'].toString().toLowerCase();
-        final queryLower = query.toLowerCase();
-
-        return nameLower.contains(queryLower) || phoneLower.contains(queryLower);
-      }).toList();
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Proveedores'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, size: 30),
+          onPressed: () {
+            context.push('/');
+          },
+        ),
+        title: const Text('Proveedores y Productos'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add, size: 30),
+            icon: const Icon(Icons.add, size: 30),
             onPressed: () {
-              context.push('/proveedoresCreate');
+              context.push('/addProductOrSupplier');
             },
           ),
         ],
@@ -116,7 +116,9 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              onChanged: filterSuppliers,
+              onChanged: (value) {
+                filterSuppliers(value);
+              },
             ),
           ),
           Expanded(
@@ -129,16 +131,27 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
                         itemCount: filteredSuppliers.length,
                         itemBuilder: (context, index) {
                           final supplier = filteredSuppliers[index];
-                          return Card(
-                            elevation: 2,
-                            margin: const EdgeInsets.symmetric(vertical: 10),
-                            child: ListTile(
-                              leading: const Icon(Icons.business),
-                              title: Text(supplier['nombre']),
-                              subtitle: Text('Teléfono: ${supplier['telefono']}'),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _showDeleteConfirmationDialog(context, supplier['id_proveedor']),
+                          return GestureDetector(
+                            onTap: () {
+                              _showOptions(context, supplier['id_proveedor'], supplier['nombre']);
+                            },
+                            child: Card(
+                              elevation: 2,
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: ListTile(
+                                leading: const Icon(Icons.business, size: 40),
+                                title: Text(
+                                  supplier['nombre'],
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text('Teléfono: ${supplier['telefono']}'),
+                                trailing: const Icon(Icons.more_vert),
                               ),
                             ),
                           );
@@ -147,6 +160,44 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showOptions(BuildContext context, int supplierId, String supplierName) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Editar Proveedor'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/editSupplier', extra: supplierId);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete),
+                title: const Text('Eliminar Proveedor'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showDeleteConfirmationDialog(context, supplierId);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.shopping_cart),
+                title: const Text('Ver Productos'),
+                onTap: () {
+                  Navigator.pop(context);
+                  fetchProductsBySupplier(supplierId); // Muestra los productos relacionados con el proveedor
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -160,18 +211,56 @@ class _SupplierScreenState extends ConsumerState<SupplierScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);  
+                Navigator.pop(context);
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);  
-                deleteSupplier(supplierId);  
+                Navigator.pop(context);
+                // Aquí agregar lógica para eliminar el proveedor
               },
               child: const Text('Eliminar'),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showProductList(BuildContext context, List<dynamic> products) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: products.isEmpty
+              ? const Center(child: Text('No hay productos para este proveedor.'))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(10),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ListTile(
+                        leading: const Icon(Icons.shopping_cart, size: 40),
+                        title: Text(
+                          product['nombre'],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text('Código: ${product['codigo']}'),
+                        trailing: const Icon(Icons.more_vert),
+                      ),
+                    );
+                  },
+                ),
         );
       },
     );

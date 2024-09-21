@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:monarca/features/shared/widgets/custom_filled_button.dart';
@@ -131,24 +132,25 @@ class _ConnectAddressCustomerScreenState
     try {
       final token = await KeyValueStorageServiceImpl().getValue<String>('token');
       final response = await http.post(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/direcciones/asignarCliente'),
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/direcciones/crear'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'id_cliente': widget.idCliente,
-          'direccion': _addressController.text,
-          'departamento': selectedDepartamento['idDepartamento'],
-          'municipio': selectedMunicipio,
-          'zona': selectedZona,
+          'Id_Cliente': widget.idCliente,
+          'Detalle_Direccion': _addressController.text,
+          'Departamento': selectedDepartamento['nombre'],
+          'Municipio': selectedMunicipio,
+          'Zona': selectedZona,
         }),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Dirección asignada correctamente al cliente')),
         );
+        context.push('/direccionesCliente', extra: widget.idCliente);
       } else {
         throw Exception('Error al asignar la dirección.');
       }

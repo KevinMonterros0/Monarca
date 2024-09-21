@@ -95,7 +95,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
             context.push('/');
           },
         ),
-        title: const Text('Proveedores y Productos'),
+        title: const Text('Proveedores'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add, size: 30),
@@ -254,7 +254,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: Text('Código: ${product['codigo']}'),
+                        subtitle: Text('Precio: Q${product['precio_compra']}'),
                         trailing: const Icon(Icons.more_vert),
                       ),
                     );

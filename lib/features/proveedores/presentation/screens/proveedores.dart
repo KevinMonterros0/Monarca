@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
 double globalTotalAmount = 0.0;
+List<Map<String, dynamic>> cart = []; 
 
 class SupplierProductScreen extends ConsumerStatefulWidget {
   const SupplierProductScreen({Key? key}) : super(key: key);
@@ -100,9 +101,9 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
         title: const Text('Proveedores'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, size: 30),
+            icon: const Icon(Icons.shopping_cart, size: 30),
             onPressed: () {
-              context.push('/addProductOrSupplier');
+              _showCartSummary(context); 
             },
           ),
         ],
@@ -171,18 +172,19 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Cancelar compra'),
-          content: const Text('¿Estás seguro de que deseas cancelar la compra?.'),
+          content: const Text('¿Estás seguro de que deseas cancelar la compra? '),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); 
+                Navigator.pop(context);
               },
               child: const Text('No'),
             ),
             TextButton(
               onPressed: () {
                 setState(() {
-                  globalTotalAmount = 0.0;
+                  globalTotalAmount = 0.0; 
+                  cart.clear(); 
                 });
                 Navigator.pop(context); 
                 context.push('/'); 
@@ -320,6 +322,8 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                                             productTotal += product['precio_compra'].toDouble();
                                             globalTotalAmount += product['precio_compra'].toDouble();
                                           });
+                                          // Añadir o actualizar el producto en el carrito
+                                          _updateCart(product, quantities[index]);
                                         },
                                       ),
                                     ],
@@ -341,7 +345,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                           setState(() {
                             globalTotalAmount -= productTotal;
                           });
-                          Navigator.pop(context); 
+                          Navigator.pop(context);
                         },
                         child: const Text('Cancelar'),
                       ),
@@ -358,6 +362,63 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  void _updateCart(dynamic product, int quantity) {
+    final existingProduct = cart.firstWhere(
+        (item) => item['id'] == product['id_producto'],
+        orElse: () => {});
+    if (existingProduct.isNotEmpty) {
+      existingProduct['quantity'] = quantity;
+    } else {
+      cart.add({
+        'id': product['id_producto'],
+        'nombre': product['nombre'],
+        'precio': product['precio_compra'],
+        'quantity': quantity,
+      });
+    }
+  }
+
+  void _showCartSummary(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Resumen de Productos Comprados',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Expanded(
+                child: cart.isEmpty
+                    ? const Center(child: Text('No hay productos en el carrito.'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(10),
+                        itemCount: cart.length,
+                        itemBuilder: (context, index) {
+                          final product = cart[index];
+                          return ListTile(
+                            title: Text(product['nombre']),
+                            subtitle: Text(
+                                'Cantidad: ${product['quantity']} | Precio: Q${product['precio']}'),
+                          );
+                        },
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Total: Q$globalTotalAmount', style: const TextStyle(fontSize: 20)),
+              ),
+            ],
+          ),
         );
       },
     );

@@ -191,7 +191,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                 title: const Text('Ver Productos'),
                 onTap: () {
                   Navigator.pop(context);
-                  fetchProductsBySupplier(supplierId); // Muestra los productos relacionados con el proveedor
+                  fetchProductsBySupplier(supplierId);
                 },
               ),
             ],
@@ -218,7 +218,6 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                // Aquí agregar lógica para eliminar el proveedor
               },
               child: const Text('Eliminar'),
             ),

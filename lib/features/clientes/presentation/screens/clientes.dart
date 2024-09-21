@@ -43,7 +43,7 @@ class CustomersNotifier extends StateNotifier<CustomersState> {
     } else {
       final filteredCustomers = allCustomers.where((customer) {
         return customer['nombre'].toLowerCase().contains(query.toLowerCase()) ||
-               customer['telefono'].toString().toLowerCase().contains(query.toLowerCase());
+              customer['telefono'].toString().toLowerCase().contains(query.toLowerCase());
       }).toList();
       state = state.copyWith(customers: filteredCustomers);
     }
@@ -88,7 +88,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 30),
           onPressed: () {
-            context.pop();
+            context.push('/');
           },
         ),
         title: const Text('Clientes'),

@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
+double globalTotalAmount = 0.0;
+
 class SupplierProductScreen extends ConsumerStatefulWidget {
   const SupplierProductScreen({Key? key}) : super(key: key);
 
@@ -92,7 +94,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 30),
           onPressed: () {
-            context.push('/');
+            _showCancelConfirmationDialog(context);
           },
         ),
         title: const Text('Proveedores'),
@@ -163,6 +165,36 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
     );
   }
 
+  void _showCancelConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Cancelar compra'),
+          content: const Text('¿Estás seguro de que deseas cancelar la compra?.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); 
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  globalTotalAmount = 0.0;
+                });
+                Navigator.pop(context); 
+                context.push('/'); 
+              },
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showOptions(BuildContext context, int supplierId, String supplierName) {
     showModalBottomSheet(
       context: context,
@@ -228,38 +260,104 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
   }
 
   void _showProductList(BuildContext context, List<dynamic> products) {
+    List<int> quantities = List<int>.filled(products.length, 0); 
+    double productTotal = 0.0;
+
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return SafeArea(
-          child: products.isEmpty
-              ? const Center(child: Text('No hay productos para este proveedor.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(10),
-                  itemCount: products.length,
-                  itemBuilder: (context, index) {
-                    final product = products[index];
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ListTile(
-                        leading: const Icon(Icons.shopping_cart, size: 40),
-                        title: Text(
-                          product['nombre'],
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: products.isEmpty
+                        ? const Center(child: Text('No hay productos para este proveedor.'))
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(10),
+                            itemCount: products.length,
+                            itemBuilder: (context, index) {
+                              final product = products[index];
+
+                              return Card(
+                                elevation: 2,
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: ListTile(
+                                  leading: const Icon(Icons.shopping_cart, size: 40),
+                                  title: Text(
+                                    product['nombre'],
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text('Precio: Q${product['precio_compra']}'),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.remove),
+                                        onPressed: () {
+                                          if (quantities[index] > 0) {
+                                            setState(() {
+                                              quantities[index]--;
+                                              productTotal -= product['precio_compra'].toDouble();
+                                              globalTotalAmount -= product['precio_compra'].toDouble();
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      Text('${quantities[index]}', style: const TextStyle(fontSize: 18)),
+                                      IconButton(
+                                        icon: const Icon(Icons.add),
+                                        onPressed: () {
+                                          setState(() {
+                                            quantities[index]++;
+                                            productTotal += product['precio_compra'].toDouble();
+                                            globalTotalAmount += product['precio_compra'].toDouble();
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        ),
-                        subtitle: Text('Precio: Q${product['precio_compra']}'),
-                        trailing: const Icon(Icons.more_vert),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('Total: Q$globalTotalAmount', style: const TextStyle(fontSize: 20)),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            globalTotalAmount -= productTotal;
+                          });
+                          Navigator.pop(context); 
+                        },
+                        child: const Text('Cancelar'),
                       ),
-                    );
-                  },
-                ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Aceptar'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
         );
       },
     );

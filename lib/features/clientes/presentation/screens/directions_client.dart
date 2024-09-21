@@ -128,7 +128,7 @@ class _DireccionesScreenState extends ConsumerState<DireccionesScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 30),
           onPressed: () {
-            context.pop();
+            context.push('/clientes');
           },
         ),
         actions: [

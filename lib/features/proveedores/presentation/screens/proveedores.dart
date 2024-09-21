@@ -430,6 +430,14 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Text('Total: Q$globalTotalAmount', style: const TextStyle(fontSize: 20)),
                   ),
+                  Visibility(
+                    visible: cart.isNotEmpty,
+                    child: ElevatedButton(
+                      onPressed: () {
+                      },
+                      child: const Text('Comprar'),
+                    ),
+                  ),
                 ],
               ),
             );

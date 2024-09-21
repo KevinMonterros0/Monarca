@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
 double globalTotalAmount = 0.0;
-List<Map<String, dynamic>> cart = []; 
+List<Map<String, dynamic>> cart = [];
 
 class SupplierProductScreen extends ConsumerStatefulWidget {
   const SupplierProductScreen({Key? key}) : super(key: key);
@@ -103,7 +103,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
           IconButton(
             icon: const Icon(Icons.shopping_cart, size: 30),
             onPressed: () {
-              _showCartSummary(context); 
+              _showCartSummary(context);
             },
           ),
         ],
@@ -183,11 +183,11 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  globalTotalAmount = 0.0; 
-                  cart.clear(); 
+                  globalTotalAmount = 0.0;
+                  cart.clear();
                 });
-                Navigator.pop(context); 
-                context.push('/'); 
+                Navigator.pop(context);
+                context.push('/');
               },
               child: const Text('Sí'),
             ),
@@ -262,7 +262,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
   }
 
   void _showProductList(BuildContext context, List<dynamic> products) {
-    List<int> quantities = List<int>.filled(products.length, 0); 
+    List<int> quantities = List<int>.filled(products.length, 0);
     double productTotal = 0.0;
 
     showModalBottomSheet(
@@ -322,7 +322,6 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                                             productTotal += product['precio_compra'].toDouble();
                                             globalTotalAmount += product['precio_compra'].toDouble();
                                           });
-                                          // Añadir o actualizar el producto en el carrito
                                           _updateCart(product, quantities[index]);
                                         },
                                       ),
@@ -372,13 +371,17 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
         (item) => item['id'] == product['id_producto'],
         orElse: () => {});
     if (existingProduct.isNotEmpty) {
-      existingProduct['quantity'] = quantity;
+      setState(() {
+        existingProduct['quantity'] = quantity;
+      });
     } else {
-      cart.add({
-        'id': product['id_producto'],
-        'nombre': product['nombre'],
-        'precio': product['precio_compra'],
-        'quantity': quantity,
+      setState(() {
+        cart.add({
+          'id': product['id_producto'],
+          'nombre': product['nombre'],
+          'precio': product['precio_compra'],
+          'quantity': quantity,
+        });
       });
     }
   }
@@ -387,40 +390,59 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return SafeArea(
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Resumen de Productos Comprados',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SafeArea(
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      'Resumen de Productos Comprados',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(
+                    child: cart.isEmpty
+                        ? const Center(child: Text('No hay productos en el carrito.'))
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(10),
+                            itemCount: cart.length,
+                            itemBuilder: (context, index) {
+                              final product = cart[index];
+                              return ListTile(
+                                title: Text(product['nombre']),
+                                subtitle: Text(
+                                    'Cantidad: ${product['quantity']} | Precio: Q${product['precio']}'),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    setState(() {
+                                      _removeFromCart(product, index);
+                                    });
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('Total: Q$globalTotalAmount', style: const TextStyle(fontSize: 20)),
+                  ),
+                ],
               ),
-              Expanded(
-                child: cart.isEmpty
-                    ? const Center(child: Text('No hay productos en el carrito.'))
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(10),
-                        itemCount: cart.length,
-                        itemBuilder: (context, index) {
-                          final product = cart[index];
-                          return ListTile(
-                            title: Text(product['nombre']),
-                            subtitle: Text(
-                                'Cantidad: ${product['quantity']} | Precio: Q${product['precio']}'),
-                          );
-                        },
-                      ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text('Total: Q$globalTotalAmount', style: const TextStyle(fontSize: 20)),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
+  }
+
+  void _removeFromCart(Map<String, dynamic> product, int index) {
+    setState(() {
+      cart.removeAt(index);
+      globalTotalAmount -= product['precio'] * product['quantity'];
+    });
   }
 }

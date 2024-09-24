@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:math'; 
 import 'package:go_router/go_router.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
@@ -79,7 +80,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
 
       if (response.statusCode == 200) {
         final products = json.decode(response.body);
-        _showProductList(context, products);
+        _showProductList(context, products, supplierId);
       } else {
         throw Exception('Error al obtener la lista de productos.');
       }
@@ -261,7 +262,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
     );
   }
 
-  void _showProductList(BuildContext context, List<dynamic> products) {
+  void _showProductList(BuildContext context, List<dynamic> products, int supplierId) {
     List<int> quantities = List<int>.filled(products.length, 0);
     double productTotal = 0.0;
 
@@ -309,20 +310,22 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                                               quantities[index]--;
                                               productTotal -= product['precio_compra'].toDouble();
                                               globalTotalAmount -= product['precio_compra'].toDouble();
+                                              _updateCart(product, quantities[index], supplierId);
                                             });
                                           }
                                         },
                                       ),
                                       Text('${quantities[index]}', style: const TextStyle(fontSize: 18)),
                                       IconButton(
-                                        icon: const Icon(Icons.add),
-                                        onPressed: () {
+                                        icon: const Icon(Icons.add
+                                      ),
+                                      onPressed: () {
                                           setState(() {
                                             quantities[index]++;
                                             productTotal += product['precio_compra'].toDouble();
                                             globalTotalAmount += product['precio_compra'].toDouble();
+                                            _updateCart(product, quantities[index], supplierId);
                                           });
-                                          _updateCart(product, quantities[index]);
                                         },
                                       ),
                                     ],
@@ -343,6 +346,9 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                         onPressed: () {
                           setState(() {
                             globalTotalAmount -= productTotal;
+                            for (var product in products) {
+                              _updateCart(product, 0, supplierId);
+                            }
                           });
                           Navigator.pop(context);
                         },
@@ -366,22 +372,23 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
     );
   }
 
-  void _updateCart(dynamic product, int quantity) {
-    final existingProduct = cart.firstWhere(
-        (item) => item['id'] == product['id_producto'],
-        orElse: () => {});
-    if (existingProduct.isNotEmpty) {
-      setState(() {
-        existingProduct['quantity'] = quantity;
-      });
-    } else {
-      setState(() {
-        cart.add({
-          'id': product['id_producto'],
-          'nombre': product['nombre'],
-          'precio': product['precio_compra'],
-          'quantity': quantity,
-        });
+  void _updateCart(dynamic product, int quantity, int supplierId) {
+    final existingProductIndex = cart.indexWhere(
+        (item) => item['id'] == product['id_producto']);
+
+    if (existingProductIndex != -1) {
+      if (quantity == 0) {
+        cart.removeAt(existingProductIndex);
+      } else {
+        cart[existingProductIndex]['quantity'] = quantity;
+      }
+    } else if (quantity > 0) {
+      cart.add({
+        'id': product['id_producto'],
+        'nombre': product['nombre'],
+        'precio': product['precio_compra'],
+        'quantity': quantity,
+        'id_proveedor': supplierId,
       });
     }
   }
@@ -434,6 +441,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
                     visible: cart.isNotEmpty,
                     child: ElevatedButton(
                       onPressed: () {
+                        _sendPurchaseRequest(context);
                       },
                       child: const Text('Comprar'),
                     ),
@@ -449,8 +457,55 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
 
   void _removeFromCart(Map<String, dynamic> product, int index) {
     setState(() {
-      cart.removeAt(index);
       globalTotalAmount -= product['precio'] * product['quantity'];
+      cart.removeAt(index);
     });
   }
+
+  void _sendPurchaseRequest(BuildContext context) async {
+    try {
+      final token = await KeyValueStorageServiceImpl().getValue<String>('token');
+      final int noFactura = Random().nextInt(900000) + 100000; 
+
+      for (var product in cart) {
+        double productTotal = (product['precio'] as num).toDouble() * product['quantity'].toDouble(); 
+
+        final response = await http.post(
+          Uri.parse('https://apiproyectomonarca.fly.dev/api/compras/crear'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'No_factura': noFactura,
+            'Total_Compra': productTotal, 
+            'Id_proveedor': product['id_proveedor'],
+            'id_producto': product['id'],
+            'cantidad': product['quantity'],
+            'precio': product['precio'],
+          }),
+        );
+
+        if (response.statusCode != 201) {
+          throw Exception('Error al realizar la compra del producto ${product['nombre']}.');
+        }
+      }
+
+      setState(() {
+        cart.clear(); 
+        globalTotalAmount = 0.0; 
+      });
+      Navigator.pop(context); 
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compra realizada exitosamente.')),
+      );
+    } catch (e) {
+      print('Error: $e');
+      Navigator.pop(context); 
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ocurrió un error al realizar la compra.')),
+      );
+    }
+  }
+
 }

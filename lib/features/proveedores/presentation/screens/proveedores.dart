@@ -463,49 +463,70 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
   }
 
   void _sendPurchaseRequest(BuildContext context) async {
-    try {
-      final token = await KeyValueStorageServiceImpl().getValue<String>('token');
-      final int noFactura = Random().nextInt(900000) + 100000; 
+  try {
+    final token = await KeyValueStorageServiceImpl().getValue<String>('token');
+    final int noFactura = Random().nextInt(900000) + 100000;  
 
+    final purchaseResponse = await http.post(
+      Uri.parse('https://apiproyectomonarca.fly.dev/api/compras/crear'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'No_factura': noFactura,
+        'Total_Compra': globalTotalAmount,
+        'Id_proveedor': cart.first['id_proveedor'],
+      }),
+    );
+
+    if (purchaseResponse.statusCode == 201) {
+      final purchaseData = json.decode(purchaseResponse.body);
+      final int idCompra = purchaseData['id_compra']; 
+
+    
       for (var product in cart) {
-        double productTotal = (product['precio'] as num).toDouble() * product['quantity'].toDouble(); 
+        double productTotal = (product['precio'] as num).toDouble() * product['quantity'].toDouble();
 
-        final response = await http.post(
-          Uri.parse('https://apiproyectomonarca.fly.dev/api/compras/crear'),
+        final detailResponse = await http.post(
+          Uri.parse('https://apiproyectomonarca.fly.dev/api/detalleCompras/crear'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
           },
           body: json.encode({
-            'No_factura': noFactura,
-            'Total_Compra': productTotal, 
-            'Id_proveedor': product['id_proveedor'],
-            'id_producto': product['id'],
-            'cantidad': product['quantity'],
-            'precio': product['precio'],
+            'Id_Compra': idCompra, 
+            'Id_Producto': product['id'],
+            'Cantidad': product['quantity'],
+            'Precio_Compra': productTotal, 
           }),
         );
 
-        if (response.statusCode != 201) {
-          throw Exception('Error al realizar la compra del producto ${product['nombre']}.');
+        if (detailResponse.statusCode != 201) {
+          throw Exception('Error al enviar el detalle del producto ${product['nombre']}.');
         }
       }
 
       setState(() {
-        cart.clear(); 
-        globalTotalAmount = 0.0; 
+        cart.clear();
+        globalTotalAmount = 0.0;
       });
-      Navigator.pop(context); 
+
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Compra realizada exitosamente.')),
       );
-    } catch (e) {
-      print('Error: $e');
-      Navigator.pop(context); 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ocurrió un error al realizar la compra.')),
-      );
+    } else {
+      throw Exception('Error al realizar la compra.');
     }
+  } catch (e) {
+    print('Error: $e');
+    Navigator.pop(context); 
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ocurrió un error al realizar la compra.')),
+    );
   }
+}
+
 
 }

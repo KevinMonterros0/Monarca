@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:monarca/config/config.dart';
 
-void main() async {
-  await Environment.initEnvironment();
+void main() {
   runApp(
     const ProviderScope(child: MainApp()));
 }

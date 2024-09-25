@@ -7,11 +7,7 @@ import 'package:monarca/features/auth/infrastructure/mappers/user_sesion.dart';
 
 class AuthDatasourceImpl extends AuthDatasource{
 
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: 'https://apiproyectomonarca.fly.dev/api',
-    )
-  );
+  final dio = Dio();
 
   @override
   Future<User> checkAuthStatus(String token) async {
@@ -36,7 +32,7 @@ class AuthDatasourceImpl extends AuthDatasource{
   @override
   Future<User> login(String username, String password) async {
     try {
-      final response = await dio.post('/usuarios/login', data: {
+      final response = await dio.post('https://apiproyectomonarca.fly.dev/api/usuarios/login', data: {
         'username':username,
         'password':password
       });

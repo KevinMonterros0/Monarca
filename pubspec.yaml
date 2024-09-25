@@ -32,7 +32,11 @@ flutter:
     - assets/loaders/
     - assets/images/
     - google_fonts/montserrat_alternates/
-    - .env
+    
+  fonts:
+    - family: montserrat_alternates 
+      fonts:
+        - asset: google_fonts/montserrat_alternates/MontserratAlternates-Light.ttf
 
 flutter_launcher_icons:
   android: true

@@ -106,7 +106,7 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 30),
           onPressed: () {
-            context.pop();
+            context.push('/');
           },
         ),
         title: const Text('Proveedores'),

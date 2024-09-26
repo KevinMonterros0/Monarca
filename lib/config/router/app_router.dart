@@ -15,6 +15,7 @@ import 'package:monarca/features/empleados/presentation/screens/empleados_crear.
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_crear.dart';
+import 'package:monarca/features/proveedores/presentation/screens/proveedores_list.dart';
 import 'package:monarca/features/roles/presentation/screens/pol_permission_create.dart';
 import 'package:monarca/features/roles/presentation/screens/rol_create.dart';
 import 'package:monarca/features/roles/presentation/screens/rol_user_create.dart';
@@ -180,6 +181,18 @@ final goRouterProvider = Provider((ref) {
           return ConnectAddressCustomerScreen(idCliente: clienteId);
         },
       ),
+      
+      GoRoute(
+      path: '/productList',
+      builder: (context, state) {
+        final params = state.extra as Map<String, dynamic>;
+        return ProductListScreen(
+          products: params['products'],
+          supplierName: params['supplierName'],
+          supplierId: params['supplierId'],
+        );
+      },
+    ),
       
 
 

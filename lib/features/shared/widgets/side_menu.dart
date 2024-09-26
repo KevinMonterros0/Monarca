@@ -134,6 +134,8 @@ class SideMenuState extends ConsumerState<SideMenu> {
         return Icons.av_timer;
       case 'face':
         return Icons.face;    
+      case 'shopping_cart_checkout':
+        return Icons.shopping_cart_checkout;
       default:
         return Icons.help_outline;
     }

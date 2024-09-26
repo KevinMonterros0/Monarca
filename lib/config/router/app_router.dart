@@ -10,6 +10,7 @@ import 'package:monarca/features/clientes/presentation/screens/clientes_create.d
 import 'package:monarca/features/clientes/presentation/screens/clientes_detail_screen.dart';
 import 'package:monarca/features/clientes/presentation/screens/clientes_directions_create.dart';
 import 'package:monarca/features/clientes/presentation/screens/directions_client.dart';
+import 'package:monarca/features/compras/compras.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_crear.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
@@ -193,7 +194,13 @@ final goRouterProvider = Provider((ref) {
         );
       },
     ),
-      
+    
+    GoRoute(
+        path: '/compras',
+        builder: (context, state) {
+          return const PurchasesScreen();
+        },
+      ),
 
 
       GoRoute(

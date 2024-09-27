@@ -138,6 +138,8 @@ class SideMenuState extends ConsumerState<SideMenu> {
         return Icons.shopping_cart_checkout;
       case 'list_alt':
         return Icons.list_alt;
+      case 'local_shipping':
+        return Icons.local_shipping;
       default:
         return Icons.help_outline;
     }

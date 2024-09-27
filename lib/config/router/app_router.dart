@@ -16,6 +16,7 @@ import 'package:monarca/features/empleados/presentation/screens/empleados_crear.
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_crear.dart';
+import 'package:monarca/features/pedidos/presentations/screens/pedidos_list.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_crear.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_edit.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_list.dart';
@@ -216,6 +217,13 @@ final goRouterProvider = Provider((ref) {
         path: '/pedidos',
         builder: (context, state) {
           return const OrdersScreen();
+        },
+      ),
+
+      GoRoute(
+        path: '/listPedidos',
+        builder: (context, state) {
+          return const OrdersListScreen();
         },
       ),
 

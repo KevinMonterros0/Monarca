@@ -163,7 +163,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                       children: [
                         Text('Cliente: ${order['cliente']}'),
                         Text('Empleado: ${order['empleado']}'),
-                        Text('Fecha de Entrega: ${DateFormat('yyyy-MM-dd HH:mm').format(fechaEntrega)}'),
+                        Text('Fecha de Entrega: ${DateFormat('yyyy-MM-dd hh:mm a').format(fechaEntrega)}'),
                         Text('Total: Q${order['totalpedido']}'),
                         Text('Estado del Pedido: ${estadoPedido ? 'Activo' : 'Inactivo'}'),
                       ],

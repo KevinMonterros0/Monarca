@@ -14,6 +14,7 @@ import 'package:monarca/features/compras/compras.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_crear.dart';
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
+import 'package:monarca/features/facturas/presentations/screens/facturas.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_crear.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_list.dart';
@@ -224,6 +225,13 @@ final goRouterProvider = Provider((ref) {
         path: '/listPedidos',
         builder: (context, state) {
           return const OrdersListScreen();
+        },
+      ),
+
+      GoRoute(
+        path: '/facturas',
+        builder: (context, state) {
+          return const InvoicesScreen();
         },
       ),
 

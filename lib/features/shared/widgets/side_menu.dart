@@ -140,6 +140,8 @@ class SideMenuState extends ConsumerState<SideMenu> {
         return Icons.list_alt;
       case 'local_shipping':
         return Icons.local_shipping;
+      case 'receipt_long':
+        return Icons.receipt_long;
       default:
         return Icons.help_outline;
     }

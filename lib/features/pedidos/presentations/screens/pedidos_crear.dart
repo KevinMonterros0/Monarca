@@ -20,6 +20,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   List<dynamic> allProducts = [];
   List<int> quantities = [];
   bool isLoading = true;
+  bool isSubmitting = false;
   List<dynamic> clients = [];
   List<dynamic> employees = [];
   String? selectedClientName;
@@ -168,6 +169,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   }
 
   Future<void> _submitOrder(BuildContext context) async {
+    setState(() {
+      isSubmitting = true;
+    });
     try {
       final keyValueStorageService = KeyValueStorageServiceImpl();
       final token = await keyValueStorageService.getValue<String>('token');
@@ -180,7 +184,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         },
         body: json.encode({
           'Id_Cliente': selectedClientId,
-          'id_empleado': selectedEmployeeId, 
+          'id_empleado': selectedEmployeeId,
           'Fecha_Entrega': DateFormat('yyyy-MM-dd HH:mm').format(selectedDeliveryDate!), 
           'TotalPedido': globalTotalAmount,
         }),
@@ -230,6 +234,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ocurrió un error al realizar el pedido.')),
       );
+    } finally {
+      setState(() {
+        isSubmitting = false;
+      });
     }
   }
 
@@ -334,7 +342,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     visible: cart.isNotEmpty && selectedClientId != null && selectedEmployeeId != null && selectedDeliveryDate != null,
                     child: ElevatedButton(
                       onPressed: () => _submitOrder(context),
-                      child: const Text('Comprar'),
+                      child: isSubmitting
+                          ? const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          : const Text('Comprar'),
                     ),
                   ),
                 ],

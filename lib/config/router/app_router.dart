@@ -16,6 +16,7 @@ import 'package:monarca/features/empleados/presentation/screens/empleados_crear.
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_crear.dart';
+import 'package:monarca/features/proveedores/presentation/screens/proveedores_edit.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_list.dart';
 import 'package:monarca/features/roles/presentation/screens/pol_permission_create.dart';
 import 'package:monarca/features/roles/presentation/screens/rol_create.dart';
@@ -199,6 +200,14 @@ final goRouterProvider = Provider((ref) {
         path: '/compras',
         builder: (context, state) {
           return const PurchasesScreen();
+        },
+      ),
+
+      GoRoute(
+        path: '/editSupplier',
+        builder: (context, state) {
+          final proveedorId = state.extra as int;
+          return SupplierDetailScreen(supplierId: proveedorId);
         },
       ),
 

@@ -12,7 +12,7 @@ class AuthDatasourceImpl extends AuthDatasource{
   @override
   Future<User> checkAuthStatus(String token) async {
     try {
-      final response = await dio.post('/usuarios/verify',
+      final response = await dio.post('https://apiproyectomonarca.fly.dev/api/usuarios/verify',
       data: {
           'token': token
         }

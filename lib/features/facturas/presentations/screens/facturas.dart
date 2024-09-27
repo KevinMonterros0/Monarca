@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
 class InvoicesScreen extends ConsumerStatefulWidget {
   const InvoicesScreen({super.key});
@@ -13,7 +14,9 @@ class InvoicesScreen extends ConsumerStatefulWidget {
 
 class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
   List<dynamic> allInvoices = [];
+  List<dynamic> filteredInvoices = [];
   bool isLoading = true;
+  DateTimeRange? selectedDateRange;
 
   @override
   void initState() {
@@ -23,9 +26,13 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
 
   Future<void> fetchInvoices() async {
     try {
+      final keyValueStorageService = KeyValueStorageServiceImpl();
+      final token = await keyValueStorageService.getValue<String>('token');
+
       final response = await http.get(
         Uri.parse('https://apiproyectomonarca.fly.dev/api/facturas/obtener'),
         headers: {
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
@@ -33,6 +40,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       if (response.statusCode == 200) {
         setState(() {
           allInvoices = json.decode(response.body);
+          filteredInvoices = allInvoices; 
           isLoading = false;
         });
       } else {
@@ -46,8 +54,40 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     }
   }
 
+  Future<void> _selectDateRange(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(now.year + 5),
+      initialDateRange: DateTimeRange(
+        start: now.subtract(const Duration(days: 7)),
+        end: now,
+      ),
+    );
+
+    if (picked != null && picked != selectedDateRange) {
+      setState(() {
+        selectedDateRange = picked;
+        filterInvoicesByDateRange();
+      });
+    }
+  }
+
+  void filterInvoicesByDateRange() {
+    if (selectedDateRange == null) return;
+
+    setState(() {
+      filteredInvoices = allInvoices.where((invoice) {
+        DateTime invoiceDate = DateTime.parse(invoice['fecha']);
+        return invoiceDate.isAfter(selectedDateRange!.start) &&
+            invoiceDate.isBefore(selectedDateRange!.end.add(const Duration(days: 1)));
+      }).toList();
+    });
+  }
+
   Color getInvoiceCardColor(bool status) {
-    return status ? Colors.green : Colors.red; // Verde si la factura está activa, rojo si está inactiva
+    return status ? Colors.green : Colors.red;
   }
 
   @override
@@ -55,39 +95,71 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lista de Facturas'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.date_range),
+            onPressed: () => _selectDateRange(context),
+          ),
+        ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: allInvoices.length,
-              itemBuilder: (context, index) {
-                final invoice = allInvoices[index];
-                final DateTime fecha = DateTime.parse(invoice['fecha']);
-                final bool status = invoice['status'];
-
-                return Card(
-                  color: getInvoiceCardColor(status),
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: ListTile(
-                    title: Text('Factura #${invoice['id_factura']}'),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('NIT: ${invoice['nit']}'),
-                        Text('Fecha: ${DateFormat('yyyy-MM-dd hh:mm a').format(fecha)}'),
-                        Text('Monto: Q${invoice['monto']}'),
-                        Text('Pedido ID: ${invoice['id_pedido']}'),
-                        Text('Estado: ${status ? 'Activo' : 'Inactivo'}'),
-                      ],
-                    ),
-                  ),
-                );
-              },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  selectedDateRange == null
+                      ? 'Seleccione un rango de fechas'
+                      : 'Desde: ${DateFormat('yyyy-MM-dd').format(selectedDateRange!.start)} - Hasta: ${DateFormat('yyyy-MM-dd').format(selectedDateRange!.end)}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                ElevatedButton(
+                  onPressed: () => _selectDateRange(context),
+                  child: const Icon(Icons.calendar_today),
+                ),
+              ],
             ),
+          ),
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredInvoices.isEmpty
+                    ? const Center(child: Text('No hay facturas disponibles.'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(10),
+                        itemCount: filteredInvoices.length,
+                        itemBuilder: (context, index) {
+                          final invoice = filteredInvoices[index];
+                          final DateTime fecha = DateTime.parse(invoice['fecha']);
+                          final bool status = invoice['status'];
+
+                          return Card(
+                            color: getInvoiceCardColor(status),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: ListTile(
+                              title: Text('Factura #${invoice['id_factura']}'),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('NIT: ${invoice['nit']}'),
+                                  Text('Fecha: ${DateFormat('yyyy-MM-dd hh:mm a').format(fecha)}'),
+                                  Text('Monto: Q${invoice['monto']}'),
+                                  Text('Pedido # ${invoice['id_pedido']}'),
+                                  Text('Estado: ${status ? 'Activo' : 'Inactivo'}'),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }

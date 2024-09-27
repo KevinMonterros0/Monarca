@@ -180,14 +180,36 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         },
         body: json.encode({
           'Id_Cliente': selectedClientId,
-          'id_empleado': selectedEmployeeId,
+          'id_empleado': selectedEmployeeId, 
           'Fecha_Entrega': DateFormat('yyyy-MM-dd HH:mm').format(selectedDeliveryDate!), 
           'TotalPedido': globalTotalAmount,
         }),
       );
 
       if (response.statusCode == 201) {
-        // Pedido exitoso
+        final pedidoData = json.decode(response.body);
+        final int idPedido = pedidoData['id_pedido'];
+
+        for (var product in cart) {
+          final detailResponse = await http.post(
+            Uri.parse('https://apiproyectomonarca.fly.dev/api/detallePedidos/crear'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: json.encode({
+              'id_Pedido': idPedido,
+              'Id_Producto': product['id'],
+              'Cantidad': product['quantity'],
+              'Precio': product['precio'],
+            }),
+          );
+
+          if (detailResponse.statusCode != 201) {
+            throw Exception('Error al enviar el detalle del producto ${product['nombre']}.');
+          }
+        }
+
         setState(() {
           globalTotalAmount = 0.0;
           cart.clear();

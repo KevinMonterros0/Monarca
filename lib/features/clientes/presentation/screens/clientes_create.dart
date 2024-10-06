@@ -41,10 +41,14 @@ class _CreateClienteScreenState extends ConsumerState<CreateClienteScreen> {
         );
 
         if (response.statusCode == 201) {
+          final responseData = json.decode(response.body);
+          final int idCliente = responseData['id_cliente'];
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Cliente creado exitosamente')),
           );
-          context.pop('/');
+
+          context.push('/direccionesClienteCreate', extra: idCliente);
         } else {
           throw Exception('Error al crear el cliente.');
         }

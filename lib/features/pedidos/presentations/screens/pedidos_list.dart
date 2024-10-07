@@ -58,7 +58,8 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
       final token = await keyValueStorageService.getValue<String>('token');
 
       final response = await http.put(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/pedidos/cambiarEstado/$idPedido'),
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/pedidos/cambiarEstado/$idPedido'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -72,34 +73,37 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Estado del pedido actualizado exitosamente')),
         );
-        fetchOrders(); 
+        fetchOrders();
       } else {
         throw Exception('Error al cambiar el estado del pedido.');
       }
     } catch (e) {
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ocurrió un error al cambiar el estado del pedido.')),
+        const SnackBar(
+            content: Text('Ocurrió un error al cambiar el estado del pedido.')),
       );
     }
   }
 
   Color getOrderCardColor(DateTime fechaEntrega, bool estadoPedido) {
-    final now = DateTime.now().toUtc().add(const Duration(hours: -6)); 
+    final now = DateTime.now().toUtc().add(const Duration(hours: -6));
     final durationToDelivery = fechaEntrega.difference(now);
 
     if (!estadoPedido) {
-      return Colors.grey; 
+      return Colors.grey;
     } else if (durationToDelivery.inHours >= 2) {
-      return Colors.green;
+      return const Color(0xFF99FF99);
     } else if (durationToDelivery.inHours == 1) {
-      return Colors.yellow;
-    } else if (durationToDelivery.inMinutes > 0 && durationToDelivery.inMinutes < 60) {
-      return Colors.yellow; 
-    } else if (now.isAfter(fechaEntrega) && now.difference(fechaEntrega).inMinutes >= 20) {
-      return Colors.red; 
+      return const Color(0xFFFFEB99);
+    } else if (durationToDelivery.inMinutes > 0 &&
+        durationToDelivery.inMinutes < 60) {
+      return const Color(0xFFFFEB99);
+    } else if (now.isAfter(fechaEntrega) &&
+        now.difference(fechaEntrega).inMinutes >= 20) {
+      return const Color(0xFFFF9999);
     } else {
-      return Colors.blue; 
+      return Colors.blue;
     }
   }
 
@@ -116,22 +120,25 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
               itemCount: allOrders.length,
               itemBuilder: (context, index) {
                 final order = allOrders[index];
-                final DateTime fechaEntrega = DateTime.parse(order['fecha_entrega']);
+                final DateTime fechaEntrega =
+                    DateTime.parse(order['fecha_entrega']);
                 final bool estadoPedido = order['estado_pedido'];
 
                 return Dismissible(
                   key: Key(order['id_pedido'].toString()),
                   background: Container(
-                    color: Colors.green,
+                    color: const Color(0x99FF99),
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Icon(Icons.check, color: Colors.white, size: 40),
+                    child:
+                        const Icon(Icons.check, color: Colors.white, size: 40),
                   ),
                   secondaryBackground: Container(
-                    color: Colors.red,
+                    color: const Color(0xFFFF6A6A),
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Icon(Icons.cancel, color: Colors.white, size: 40),
+                    child:
+                        const Icon(Icons.cancel, color: Colors.white, size: 40),
                   ),
                   confirmDismiss: (direction) async {
                     if (direction == DismissDirection.endToStart) {
@@ -141,7 +148,9 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                         await changeOrderStatus(order['id_pedido'], true);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('No se puede activar un pedido cuya fecha de entrega ya ha pasado.')),
+                          const SnackBar(
+                              content: Text(
+                                  'No se puede activar un pedido cuya fecha de entrega ya ha pasado.')),
                         );
                       }
                     }
@@ -154,15 +163,34 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: ListTile(
-                      title: Text('Pedido #${order['id_pedido']}'),
+                      title: Text(
+                        'Pedido #${order['id_pedido']}',
+                        style: const TextStyle(
+                            fontWeight:
+                                FontWeight.bold),
+                      ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Cliente: ${order['cliente']}'),
-                          Text('Empleado: ${order['empleado']}'),
-                          Text('Fecha de Entrega: ${DateFormat('yyyy-MM-dd hh:mm a').format(fechaEntrega)}'),
-                          Text('Total: Q${order['totalpedido']}'),
-                          Text('Estado del Pedido: ${estadoPedido ? 'Activo' : 'Inactivo'}'),
+                          Text(
+                            'Cliente: ${order['cliente']}',
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                          Text(
+                            'Empleado: ${order['empleado']}',
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                          Text(
+                            'Fecha de Entrega: ${DateFormat('yyyy-MM-dd hh:mm a').format(fechaEntrega)}',
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                          Text(
+                            'Total: Q${order['totalpedido']}',
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                          Text(
+                              'Estado del Pedido: ${estadoPedido ? 'Activo' : 'Inactivo'}',
+                              style: const TextStyle(color: Colors.black))
                         ],
                       ),
                       onTap: () {
@@ -182,7 +210,8 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
       final token = await keyValueStorageService.getValue<String>('token');
 
       final response = await http.get(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/rutas/obtenerporPedido/$idPedido'),
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/rutas/obtenerporPedido/$idPedido'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -218,7 +247,8 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: direccion));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Dirección copiada al portapapeles.')),
+                    const SnackBar(
+                        content: Text('Dirección copiada al portapapeles.')),
                   );
                 },
                 child: const Text('Copiar dirección'),

@@ -127,7 +127,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                 return Dismissible(
                   key: Key(order['id_pedido'].toString()),
                   background: Container(
-                    color: const Color(0x99FF99),
+                    color: const Color(0xFF99FF99),
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child:

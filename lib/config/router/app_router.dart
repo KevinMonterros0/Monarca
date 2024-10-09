@@ -16,6 +16,7 @@ import 'package:monarca/features/empleados/presentation/screens/empleados_crear.
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
 import 'package:monarca/features/facturas/presentations/screens/facturas.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
+import 'package:monarca/features/pedidos/presentations/screens/pedidos_clientes.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_crear.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_list.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_crear.dart';
@@ -186,20 +187,20 @@ final goRouterProvider = Provider((ref) {
           return ConnectAddressCustomerScreen(idCliente: clienteId);
         },
       ),
-      
+
       GoRoute(
-      path: '/productList',
-      builder: (context, state) {
-        final params = state.extra as Map<String, dynamic>;
-        return ProductListScreen(
-          products: params['products'],
-          supplierName: params['supplierName'],
-          supplierId: params['supplierId'],
-        );
-      },
-    ),
-    
-    GoRoute(
+        path: '/productList',
+        builder: (context, state) {
+          final params = state.extra as Map<String, dynamic>;
+          return ProductListScreen(
+            products: params['products'],
+            supplierName: params['supplierName'],
+            supplierId: params['supplierId'],
+          );
+        },
+      ),
+
+      GoRoute(
         path: '/compras',
         builder: (context, state) {
           return const PurchasesScreen();
@@ -217,7 +218,17 @@ final goRouterProvider = Provider((ref) {
       GoRoute(
         path: '/pedidos',
         builder: (context, state) {
-          return const OrdersScreen();
+          return const RepartidorSearchScreen();
+        },
+      ),
+
+      GoRoute(
+        path: '/pedidosCrear',
+        builder: (context, state) {
+          final int idRepartidor = state.extra as int; 
+          return OrdersScreen(
+              idRepartidor:
+                  idRepartidor); // Pasa el idRepartidor a la pantalla de creación de pedidos
         },
       ),
 
@@ -234,7 +245,6 @@ final goRouterProvider = Provider((ref) {
           return const InvoicesScreen();
         },
       ),
-
 
       GoRoute(
         path: '/',

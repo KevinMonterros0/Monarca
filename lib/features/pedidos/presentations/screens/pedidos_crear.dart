@@ -9,7 +9,9 @@ double globalTotalAmount = 0.0;
 List<Map<String, dynamic>> cart = [];
 
 class OrdersScreen extends ConsumerStatefulWidget {
-  const OrdersScreen({super.key});
+  final int idRepartidor;
+
+  const OrdersScreen({super.key, required this.idRepartidor});
 
   @override
   _OrdersScreenState createState() => _OrdersScreenState();

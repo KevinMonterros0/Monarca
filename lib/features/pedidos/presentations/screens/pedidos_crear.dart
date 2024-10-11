@@ -81,6 +81,19 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               return ListTile(
                 title: Text(item['nombre']),
                 subtitle: Text('Cantidad: ${item['quantity']} - Total: Q${item['precio'] * item['quantity']}'),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    setState(() {
+                      globalTotalAmount -= item['precio'] * item['quantity'];
+                      final productIndex = allProducts.indexWhere((product) => product['nombre'] == item['nombre']);
+                      quantities[productIndex] = 0; 
+                      cart.remove(item);
+                    });
+                    Navigator.pop(context);
+                    _showCart(); 
+                  },
+                ),
               );
             }).toList(),
             const Divider(),
@@ -153,6 +166,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     setState(() {
       cart.clear();
       globalTotalAmount = 0.0;
+      quantities = List<int>.filled(allProducts.length, 0);
     });
   }
 
@@ -210,9 +224,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Image.asset(
-                          'assets/images/${product['imagen']}', 
+                          'assets/images/${product['imagen']}',
                           fit: BoxFit.cover,
-                          width: 150, 
+                          width: 150,
                           height: 150,
                         ),
                         Padding(

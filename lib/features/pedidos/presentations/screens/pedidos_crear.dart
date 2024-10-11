@@ -22,6 +22,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   List<dynamic> allProducts = [];
   List<int> quantities = [];
   bool isLoading = true;
+  DateTime? selectedDeliveryDate;
 
   @override
   void initState() {
@@ -69,6 +70,79 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         .replaceAll(RegExp(r'[úùüû]'), 'u');
   }
 
+  Future<void> _selectDeliveryDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null) {
+      final TimeOfDay? timePicked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (timePicked != null) {
+        setState(() {
+          selectedDeliveryDate = DateTime(
+            picked.year,
+            picked.month,
+            picked.day,
+            timePicked.hour,
+            timePicked.minute,
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _createOrder() async {
+    if (selectedDeliveryDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor selecciona una fecha y hora de entrega.')),
+      );
+      return;
+    }
+
+    try {
+      final keyValueStorageService = KeyValueStorageServiceImpl();
+      final token = await keyValueStorageService.getValue<String>('token');
+
+      final body = {
+        "Id_Cliente": widget.idCliente,
+        "id_empleado": widget.idRepartidor,
+        "Fecha_Entrega": selectedDeliveryDate!.toUtc().toIso8601String(),
+        "TotalPedido": globalTotalAmount,
+      };
+
+      final response = await http.post(
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/pedidos/crear'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 201) {
+        _clearCart();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Pedido creado exitosamente')),
+        );
+        context.push('/');
+      } else {
+        throw Exception('Error al crear el pedido.');
+      }
+    } catch (e) {
+      print('Error al crear el pedido: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al crear el pedido: $e')),
+      );
+    }
+  }
+
   void _showCart() {
     showModalBottomSheet(
       context: context,
@@ -87,11 +161,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     setState(() {
                       globalTotalAmount -= item['precio'] * item['quantity'];
                       final productIndex = allProducts.indexWhere((product) => product['nombre'] == item['nombre']);
-                      quantities[productIndex] = 0; 
+                      quantities[productIndex] = 0;
                       cart.remove(item);
                     });
                     Navigator.pop(context);
-                    _showCart(); 
+                    _showCart();
                   },
                 ),
               );
@@ -102,9 +176,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               trailing: Text('Q$globalTotalAmount'),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: _createOrder,
               child: const Text('Realizar Pedido'),
             )
           ],
@@ -282,6 +354,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   );
                 },
               ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _selectDeliveryDate(context),
+          label: const Text('Seleccionar Fecha de Entrega'),
+          icon: const Icon(Icons.calendar_today),
+        ),
       ),
     );
   }

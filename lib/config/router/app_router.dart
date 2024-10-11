@@ -16,7 +16,7 @@ import 'package:monarca/features/empleados/presentation/screens/empleados_crear.
 import 'package:monarca/features/empleados/presentation/screens/empleados_detail.dart';
 import 'package:monarca/features/facturas/presentations/screens/facturas.dart';
 import 'package:monarca/features/home/presentation/home_screen.dart';
-import 'package:monarca/features/pedidos/presentations/screens/pedidos_clientes.dart';
+import 'package:monarca/features/pedidos/presentations/screens/pedidos_repartidores.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_crear.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_list.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_crear.dart';
@@ -228,7 +228,7 @@ final goRouterProvider = Provider((ref) {
           final int idRepartidor = state.extra as int; 
           return OrdersScreen(
               idRepartidor:
-                  idRepartidor); // Pasa el idRepartidor a la pantalla de creación de pedidos
+                  idRepartidor); 
         },
       ),
 

@@ -9,9 +9,10 @@ double globalTotalAmount = 0.0;
 List<Map<String, dynamic>> cart = [];
 
 class OrdersScreen extends ConsumerStatefulWidget {
-  final int idRepartidor;
+  final int idRepartidor;  
+  final int idCliente; 
 
-  const OrdersScreen({super.key, required this.idRepartidor});
+  const OrdersScreen({super.key, required this.idRepartidor, required this.idCliente});
 
   @override
   _OrdersScreenState createState() => _OrdersScreenState();
@@ -80,7 +81,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Productos'),
+        title: Text('Pedido para Cliente #${widget.idCliente} y Repartidor #${widget.idRepartidor}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart),

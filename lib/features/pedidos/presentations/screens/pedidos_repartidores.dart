@@ -2,83 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:monarca/features/pedidos/presentations/screens/pedidos_clientes.dart';
 import 'dart:convert';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
-final repartidoresProvider =
-    StateNotifierProvider<RepartidoresNotifier, RepartidoresState>((ref) {
-  return RepartidoresNotifier();
-});
-
-class RepartidoresNotifier extends StateNotifier<RepartidoresState> {
-  List<dynamic> allRepartidores = [];
-
-  RepartidoresNotifier() : super(RepartidoresState());
-
-  Future<void> fetchRepartidores() async {
-    try {
-      final token =
-          await KeyValueStorageServiceImpl().getValue<String>('token');
-      final response = await http.get(
-        Uri.parse(
-            'https://apiproyectomonarca.fly.dev/api/empleados/obtenerRepartidores'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> repartidoresList = json.decode(response.body);
-        allRepartidores = repartidoresList;
-        state = state.copyWith(repartidores: repartidoresList);
-      } else {
-        throw Exception('Error al obtener la lista de repartidores.');
-      }
-    } catch (e) {
-      print('Error al obtener la lista de repartidores: $e');
-    }
-  }
-
-  void filterRepartidoresByName(String query) {
-    if (query.isEmpty) {
-      state = state.copyWith(repartidores: allRepartidores);
-    } else {
-      final filteredRepartidores = allRepartidores.where((repartidor) {
-        return repartidor['nombre']
-                .toLowerCase()
-                .contains(query.toLowerCase()) ||
-            repartidor['telefono']
-                .toString()
-                .toLowerCase()
-                .contains(query.toLowerCase());
-      }).toList();
-      state = state.copyWith(repartidores: filteredRepartidores);
-    }
-  }
-}
-
-class RepartidoresState {
-  final List<dynamic> repartidores;
-
-  RepartidoresState({this.repartidores = const []});
-
-  RepartidoresState copyWith({List<dynamic>? repartidores}) {
-    return RepartidoresState(
-      repartidores: repartidores ?? this.repartidores,
-    );
-  }
-}
-
 class RepartidorSearchScreen extends ConsumerStatefulWidget {
-  const RepartidorSearchScreen({super.key});
+  final int idCliente;
+
+  const RepartidorSearchScreen({super.key, required this.idCliente});
 
   @override
   _RepartidorSearchScreenState createState() => _RepartidorSearchScreenState();
 }
 
-class _RepartidorSearchScreenState
-    extends ConsumerState<RepartidorSearchScreen> {
+class _RepartidorSearchScreenState extends ConsumerState<RepartidorSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -100,7 +37,7 @@ class _RepartidorSearchScreenState
             context.pop();
           },
         ),
-        title: const Text('Buscar Repartidor'),
+        title: Text('Buscar Repartidor para Cliente #${widget.idCliente}'),
       ),
       body: Column(
         children: [
@@ -114,9 +51,7 @@ class _RepartidorSearchScreenState
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                ref
-                    .read(repartidoresProvider.notifier)
-                    .filterRepartidoresByName(value);
+                ref.read(repartidoresProvider.notifier).filterRepartidoresByName(value); 
               },
             ),
           ),
@@ -126,7 +61,7 @@ class _RepartidorSearchScreenState
                 final repartidoresState = ref.watch(repartidoresProvider);
 
                 if (repartidoresState.repartidores.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator()); 
                 }
 
                 return GridView.builder(
@@ -143,7 +78,7 @@ class _RepartidorSearchScreenState
 
                     return GestureDetector(
                       onTap: () {
-                        _selectRepartidor(context, repartidor['id_empleado']);
+                        _selectRepartidor(context, repartidor['id_empleado']); 
                       },
                       child: Card(
                         elevation: 2,
@@ -181,7 +116,8 @@ class _RepartidorSearchScreenState
     );
   }
 
-  void _selectRepartidor(BuildContext context, int idRepartidor) {
-    context.push('/pedidosCrear', extra: idRepartidor);
+
+  void _selectRepartidor(BuildContext context, int idRepartidor) {    
+    context.push('/pedidosCrear', extra: {'id_cliente': widget.idCliente, 'id_repartidor': idRepartidor});
   }
 }

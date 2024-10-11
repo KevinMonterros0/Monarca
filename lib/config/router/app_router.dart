@@ -19,6 +19,7 @@ import 'package:monarca/features/home/presentation/home_screen.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_repartidores.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_crear.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_list.dart';
+import 'package:monarca/features/pedidos/presentations/screens/peidos_clientes.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_crear.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_edit.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_list.dart';
@@ -218,19 +219,34 @@ final goRouterProvider = Provider((ref) {
       GoRoute(
         path: '/pedidos',
         builder: (context, state) {
-          return const RepartidorSearchScreen();
+          return const ActiveClientsScreen();
         },
       ),
 
       GoRoute(
-        path: '/pedidosCrear',
+        path: '/pedidosRepartidor',
         builder: (context, state) {
-          final int idRepartidor = state.extra as int; 
-          return OrdersScreen(
-              idRepartidor:
-                  idRepartidor); 
+          final int idCliente = state.extra as int; 
+          return RepartidorSearchScreen(
+              idCliente:
+                  idCliente);
         },
       ),
+
+      GoRoute(
+  path: '/pedidosCrear',
+  builder: (context, state) {
+    final Map<String, int> extras = state.extra as Map<String, int>;
+    final int idCliente = extras['id_cliente']!;
+    final int idRepartidor = extras['id_repartidor']!;
+    
+    return OrdersScreen(
+      idRepartidor: idRepartidor, 
+      idCliente: idCliente, 
+    );
+  },
+),
+
 
       GoRoute(
         path: '/listPedidos',

@@ -19,7 +19,7 @@ import 'package:monarca/features/home/presentation/home_screen.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_repartidores.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_crear.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_list.dart';
-import 'package:monarca/features/pedidos/presentations/screens/peidos_clientes.dart';
+import 'package:monarca/features/pedidos/presentations/screens/pedidos_clientes.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_crear.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_edit.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_list.dart';

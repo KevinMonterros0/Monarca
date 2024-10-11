@@ -5,18 +5,15 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
-// Provider que gestiona el estado de los clientes activos
 final activeClientsProvider = StateNotifierProvider<ActiveClientsNotifier, ActiveClientsState>((ref) {
   return ActiveClientsNotifier();
 });
 
-// Notifier que maneja la lógica de obtener y filtrar clientes activos
 class ActiveClientsNotifier extends StateNotifier<ActiveClientsState> {
   List<dynamic> allClients = [];
 
   ActiveClientsNotifier() : super(ActiveClientsState());
 
-  // Función para obtener clientes activos desde la API
   Future<void> fetchActiveClients() async {
     try {
       final token = await KeyValueStorageServiceImpl().getValue<String>('token');
@@ -40,7 +37,6 @@ class ActiveClientsNotifier extends StateNotifier<ActiveClientsState> {
     }
   }
 
-  // Función para filtrar clientes activos por nombre o teléfono
   void filterClientsByName(String query) {
     if (query.isEmpty) {
       state = state.copyWith(clients: allClients);
@@ -54,7 +50,6 @@ class ActiveClientsNotifier extends StateNotifier<ActiveClientsState> {
   }
 }
 
-// Estado de los clientes activos
 class ActiveClientsState {
   final List<dynamic> clients;
 
@@ -67,7 +62,6 @@ class ActiveClientsState {
   }
 }
 
-// Pantalla de búsqueda de clientes activos
 class ActiveClientsScreen extends ConsumerStatefulWidget {
   const ActiveClientsScreen({super.key});
 
@@ -81,14 +75,13 @@ class _ActiveClientsScreenState extends ConsumerState<ActiveClientsScreen> {
   @override
   void initState() {
     super.initState();
-    // Obtener la lista de clientes activos cuando se inicializa la pantalla
     ref.read(activeClientsProvider.notifier).fetchActiveClients();
   }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = (width / 200).floor(); // Ajuste dinámico del número de columnas
+    final crossAxisCount = (width / 200).floor();
 
     return Scaffold(
       appBar: AppBar(
@@ -98,11 +91,10 @@ class _ActiveClientsScreenState extends ConsumerState<ActiveClientsScreen> {
             context.pop();
           },
         ),
-        title: const Text('Clientes Activos'),
+        title: const Text('Clientes'),
       ),
       body: Column(
         children: [
-          // Campo de búsqueda
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: TextField(
@@ -113,7 +105,7 @@ class _ActiveClientsScreenState extends ConsumerState<ActiveClientsScreen> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                ref.read(activeClientsProvider.notifier).filterClientsByName(value); // Filtrar clientes
+                ref.read(activeClientsProvider.notifier).filterClientsByName(value);
               },
             ),
           ),
@@ -123,7 +115,7 @@ class _ActiveClientsScreenState extends ConsumerState<ActiveClientsScreen> {
                 final clientsState = ref.watch(activeClientsProvider);
 
                 if (clientsState.clients.isEmpty) {
-                  return const Center(child: CircularProgressIndicator()); // Mostrar indicador de carga
+                  return const Center(child: CircularProgressIndicator()); 
                 }
 
                 return GridView.builder(
@@ -140,7 +132,7 @@ class _ActiveClientsScreenState extends ConsumerState<ActiveClientsScreen> {
 
                     return GestureDetector(
                       onTap: () {
-                        _selectClient(context, client['id_cliente']); // Seleccionar cliente
+                        _selectClient(context, client['id_cliente']); 
                       },
                       child: Card(
                         elevation: 2,

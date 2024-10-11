@@ -9,8 +9,8 @@ double globalTotalAmount = 0.0;
 List<Map<String, dynamic>> cart = [];
 
 class OrdersScreen extends ConsumerStatefulWidget {
-  final int idRepartidor;  
-  final int idCliente; 
+  final int idRepartidor;
+  final int idCliente;
 
   const OrdersScreen({super.key, required this.idRepartidor, required this.idCliente});
 
@@ -59,7 +59,78 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     }
   }
 
-  void _updateCart(dynamic product, int quantity) {
+  String normalizeText(String input) {
+    return input
+        .toLowerCase()
+        .replaceAll(RegExp(r'[áàäâ]'), 'a')
+        .replaceAll(RegExp(r'[éèëê]'), 'e')
+        .replaceAll(RegExp(r'[íìïî]'), 'i')
+        .replaceAll(RegExp(r'[óòöô]'), 'o')
+        .replaceAll(RegExp(r'[úùüû]'), 'u');
+  }
+
+  void _showCart() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return ListView(
+          padding: const EdgeInsets.all(10),
+          children: [
+            Text('Carrito de compras', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ...cart.map((item) {
+              return ListTile(
+                title: Text(item['nombre']),
+                subtitle: Text('Cantidad: ${item['quantity']} - Total: Q${item['precio'] * item['quantity']}'),
+              );
+            }).toList(),
+            const Divider(),
+            ListTile(
+              title: Text('Total del Carrito'),
+              trailing: Text('Q$globalTotalAmount'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Realizar Pedido'),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _askIfGarrafonIsNew(BuildContext context, dynamic product, int index) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('¿Es un Garrafón nuevo?'),
+          content: const Text('Por favor selecciona si el Garrafón es nuevo o no.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'No'),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'Si'),
+              child: const Text('Si'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        quantities[index]++;
+        globalTotalAmount += product['precio'];
+        _updateCart(product, quantities[index], isNew: result == 'Si');
+      });
+    }
+  }
+
+  void _updateCart(dynamic product, int quantity, {bool isNew = false}) {
     final existingProductIndex = cart.indexWhere((item) => item['nombre'] == product['nombre']);
 
     if (existingProductIndex != -1) {
@@ -73,93 +144,131 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         'nombre': product['nombre'],
         'precio': product['precio'],
         'quantity': quantity,
+        'isNew': isNew,
       });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Pedido para Cliente #${widget.idCliente} y Repartidor #${widget.idRepartidor}'),
+  void _clearCart() {
+    setState(() {
+      cart.clear();
+      globalTotalAmount = 0.0;
+    });
+  }
+
+  Future<bool> _showExitWarning() async {
+    return await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Salir de la página'),
+        content: const Text('Si sales ahora, se perderán todos los datos del carrito. ¿Deseas continuar?'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {},
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () {
+              _clearCart();
+              context.push('/');
+            },
+            child: const Text('Sí'),
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: allProducts.length,
-              itemBuilder: (context, index) {
-                final product = allProducts[index];
+    ) ?? false;
+  }
 
-                return Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/${product['imagen']}', 
-                        fit: BoxFit.cover,
-                        width: 150, 
-                        height: 150,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          product['nombre'],
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
-                          'Q${product['precio']}',
-                          style: const TextStyle(fontSize: 14),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.remove),
-                            onPressed: () {
-                              if (quantities[index] > 0) {
-                                setState(() {
-                                  quantities[index]--;
-                                  globalTotalAmount -= product['precio'];
-                                  _updateCart(product, quantities[index]);
-                                });
-                              }
-                            },
-                          ),
-                          Text('${quantities[index]}', style: const TextStyle(fontSize: 18)),
-                          IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () {
-                              setState(() {
-                                quantities[index]++;
-                                globalTotalAmount += product['precio'];
-                                _updateCart(product, quantities[index]);
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _showExitWarning,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Productos'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.shopping_cart),
+              onPressed: _showCart,
             ),
+          ],
+        ),
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView.builder(
+                padding: const EdgeInsets.all(10),
+                itemCount: allProducts.length,
+                itemBuilder: (context, index) {
+                  final product = allProducts[index];
+
+                  return Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/${product['imagen']}', 
+                          fit: BoxFit.cover,
+                          width: 150, 
+                          height: 150,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            product['nombre'],
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            'Q${product['precio']}',
+                            style: const TextStyle(fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove),
+                              onPressed: () {
+                                if (quantities[index] > 0) {
+                                  setState(() {
+                                    quantities[index]--;
+                                    globalTotalAmount -= product['precio'];
+                                    _updateCart(product, quantities[index]);
+                                  });
+                                }
+                              },
+                            ),
+                            Text('${quantities[index]}', style: const TextStyle(fontSize: 18)),
+                            IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: () {
+                                if (normalizeText(product['nombre']) == 'garrafon') {
+                                  _askIfGarrafonIsNew(context, product, index);
+                                } else {
+                                  setState(() {
+                                    quantities[index]++;
+                                    globalTotalAmount += product['precio'];
+                                    _updateCart(product, quantities[index]);
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

@@ -52,7 +52,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
     }
   }
 
-  Future<void> changeOrderStatus(int idPedido, bool newStatus) async {
+  Future<void> changeOrderStatus(int idPedido, String newStatus) async {
     try {
       final keyValueStorageService = KeyValueStorageServiceImpl();
       final token = await keyValueStorageService.getValue<String>('token');
@@ -65,13 +65,13 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
           'Content-Type': 'application/json',
         },
         body: json.encode({
-          'estado': newStatus,
+          'estado': newStatus,  
         }),
       );
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Estado del pedido actualizado exitosamente')),
+          const SnackBar(content: Text('Estado del pedido actualizado exitosamente')),
         );
         fetchOrders();
       } else {
@@ -86,12 +86,14 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
     }
   }
 
-  Color getOrderCardColor(DateTime fechaEntrega, bool estadoPedido) {
+  Color getOrderCardColor(DateTime fechaEntrega, String estadoPedido) {
     final now = DateTime.now().toUtc().add(const Duration(hours: -6));
     final durationToDelivery = fechaEntrega.difference(now);
 
-    if (!estadoPedido) {
-      return Colors.grey;
+    if (estadoPedido == 'N') {
+      return Colors.grey; 
+    } else if (estadoPedido == 'E') {
+      return const Color(0xFFA7C7E7);
     } else if (durationToDelivery.inHours >= 2) {
       return const Color(0xFF99FF99);
     } else if (durationToDelivery.inHours == 1) {
@@ -122,7 +124,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                 final order = allOrders[index];
                 final DateTime fechaEntrega =
                     DateTime.parse(order['fecha_entrega']);
-                final bool estadoPedido = order['estado_pedido'];
+                final String estadoPedido = order['estado_pedido'];
 
                 return Dismissible(
                   key: Key(order['id_pedido'].toString()),
@@ -142,10 +144,10 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                   ),
                   confirmDismiss: (direction) async {
                     if (direction == DismissDirection.endToStart) {
-                      await changeOrderStatus(order['id_pedido'], false);
+                      await changeOrderStatus(order['id_pedido'], 'N'); 
                     } else if (direction == DismissDirection.startToEnd) {
                       if (DateTime.now().isBefore(fechaEntrega)) {
-                        await changeOrderStatus(order['id_pedido'], true);
+                        await changeOrderStatus(order['id_pedido'], 'E'); 
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -166,8 +168,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                       title: Text(
                         'Pedido #${order['id_pedido']}',
                         style: const TextStyle(
-                            fontWeight:
-                                FontWeight.bold),
+                            fontWeight: FontWeight.bold),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +190,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                             style: const TextStyle(color: Colors.black),
                           ),
                           Text(
-                              'Estado del Pedido: ${estadoPedido ? 'Activo' : 'Inactivo'}',
+                              'Estado del Pedido: ${estadoPedido == 'A' ? 'Activo' : estadoPedido == 'E' ? 'Entregado' : 'Cancelado'}',
                               style: const TextStyle(color: Colors.black))
                         ],
                       ),

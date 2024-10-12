@@ -86,8 +86,17 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     });
   }
 
-  Color getInvoiceCardColor(bool status) {
-    return status ? Colors.green : Colors.red;
+  Color getInvoiceCardColor(String status) {
+    switch (status) {
+      case 'A':
+        return const Color(0xFFC8E6C9);
+      case 'E':
+        return const Color(0xFFBBDEFB);
+      case 'N':
+        return const Color(0xFFFFCDD2);
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
@@ -133,7 +142,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                         itemBuilder: (context, index) {
                           final invoice = filteredInvoices[index];
                           final DateTime fecha = DateTime.parse(invoice['fecha']);
-                          final bool status = invoice['status'];
+                          final String status = invoice['status'];
 
                           return Card(
                             color: getInvoiceCardColor(status),
@@ -150,7 +159,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                                   Text('Fecha: ${DateFormat('yyyy-MM-dd hh:mm a').format(fecha)}'),
                                   Text('Monto: Q${invoice['monto']}'),
                                   Text('Pedido # ${invoice['id_pedido']}'),
-                                  Text('Estado: ${status ? 'Activo' : 'Inactivo'}'),
+                                  Text('Estado: ${status == 'A' ? 'Activo' : status == 'E' ? 'Entregado' : 'Cancelado'}'),
                                 ],
                               ),
                             ),

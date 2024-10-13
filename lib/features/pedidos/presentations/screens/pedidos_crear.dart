@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +9,12 @@ import 'package:intl/intl.dart';
 
 double globalTotalAmount = 0.0;
 List<Map<String, dynamic>> cart = [];
+
+// Variables globales para cantidades de productos
+int cantidadGarrafonNuevo = 0;
+int cantidadGarrafonViejo = 0;
+int cantidadBolsas = 0;
+int cantidadFardosBotellas = 0;
 
 class OrdersScreen extends ConsumerStatefulWidget {
   final int idRepartidor;
@@ -158,7 +163,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     final token = await keyValueStorageService.getValue<String>('token');
 
     for (var item in cart) {
-      print(item);
       final body = {
         "id_Pedido": idPedido,
         "Id_Producto": item['id_producto'],
@@ -167,7 +171,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       };
 
       final response = await http.post(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/detallePedidos/crear'),
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/detallePedidos/crear'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -178,6 +183,54 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       if (response.statusCode != 201) {
         throw Exception('Error al guardar el detalle del pedido.');
       }
+    }
+  }
+
+  Future<bool> verificarExistencias(BuildContext context) async {
+    try {
+      final keyValueStorageService = KeyValueStorageServiceImpl();
+      final token = await keyValueStorageService.getValue<String>('token');
+
+      final body = {
+        "cantidad_garrafon_nuevo": cantidadGarrafonNuevo,
+        "cantidad_garrafon_viejo": cantidadGarrafonViejo,
+        "cantidad_bolsas": cantidadBolsas,
+        "cantidad_fardos_botellas": cantidadFardosBotellas
+      };
+
+      print(body);
+
+      final response = await http.post(
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/pedidos/verificar-existencias'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final result = jsonDecode(response.body);
+        if (result != null &&
+            result['message'] ==
+                'Existencias suficientes para procesar la compra.') {
+          return true;
+        } else {
+          return false;
+        }
+      } else if (response.statusCode == 400) {
+        final errorResult = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorResult['error'] ?? 'Error desconocido')),
+        );
+        return false;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Error al verificar existencias: $e');
+      return false; // En caso de error, devuelve false
     }
   }
 
@@ -242,35 +295,31 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     );
   }
 
-  Future<void> _askIfGarrafonIsNew(
-      BuildContext context, dynamic product, int index) async {
-    final result = await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('¿Es un Garrafón nuevo?'),
-          content:
-              const Text('Por favor selecciona si el Garrafón es nuevo o no.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'No'),
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'Si'),
-              child: const Text('Si'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result != null) {
+  Future<void> agregarFardoDeBotellas(dynamic product, int index) async {
+    cantidadFardosBotellas++;
+    final existencias = await verificarExistencias(context);
+    if (existencias) {
       setState(() {
         quantities[index]++;
         globalTotalAmount += product['precio'];
-        _updateCart(product, quantities[index], isNew: result == 'Si');
+        _updateCart(product, quantities[index]);
       });
+    } else {
+      cantidadFardosBotellas--;
+    }
+  }
+
+  Future<void> agregarBolsasDeAgua(dynamic product, int index) async {
+    cantidadBolsas++;
+    final existencias = await verificarExistencias(context);
+    if (existencias) {
+      setState(() {
+        quantities[index]++;
+        globalTotalAmount += product['precio'];
+        _updateCart(product, quantities[index]);
+      });
+    } else {
+      cantidadBolsas--;
     }
   }
 
@@ -405,9 +454,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                 icon: const Icon(Icons.add),
                                 onPressed: () {
                                   if (normalizeText(product['nombre']) ==
-                                      'garrafon') {
-                                    _askIfGarrafonIsNew(
-                                        context, product, index);
+                                      'fardo de botellas') {
+                                    agregarFardoDeBotellas(product, index);
+                                  } else if (normalizeText(product['nombre']) ==
+                                      '25 bolsas') {
+                                    agregarBolsasDeAgua(product, index);
                                   } else {
                                     setState(() {
                                       quantities[index]++;

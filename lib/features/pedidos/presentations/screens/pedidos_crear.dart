@@ -10,7 +10,6 @@ import 'package:intl/intl.dart';
 double globalTotalAmount = 0.0;
 List<Map<String, dynamic>> cart = [];
 
-// Variables globales para cantidades de productos
 int cantidadGarrafonNuevo = 0;
 int cantidadGarrafonViejo = 0;
 int cantidadBolsas = 0;
@@ -20,8 +19,7 @@ class OrdersScreen extends ConsumerStatefulWidget {
   final int idRepartidor;
   final int idCliente;
 
-  const OrdersScreen(
-      {super.key, required this.idRepartidor, required this.idCliente});
+  const OrdersScreen({super.key, required this.idRepartidor, required this.idCliente});
 
   @override
   _OrdersScreenState createState() => _OrdersScreenState();
@@ -112,8 +110,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Future<void> _createOrder() async {
     if (selectedDeliveryDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Por favor selecciona una fecha y hora de entrega.')),
+        SnackBar(content: Text('Por favor selecciona una fecha y hora de entrega.')),
       );
       return;
     }
@@ -171,8 +168,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       };
 
       final response = await http.post(
-        Uri.parse(
-            'https://apiproyectomonarca.fly.dev/api/detallePedidos/crear'),
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/detallePedidos/crear'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -201,8 +197,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       print(body);
 
       final response = await http.post(
-        Uri.parse(
-            'https://apiproyectomonarca.fly.dev/api/pedidos/verificar-existencias'),
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/pedidos/verificar-existencias'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -212,9 +207,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
-        if (result != null &&
-            result['message'] ==
-                'Existencias suficientes para procesar la compra.') {
+        if (result != null && result['message'] == 'Existencias suficientes para procesar la compra.') {
           return true;
         } else {
           return false;
@@ -230,7 +223,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       }
     } catch (e) {
       print('Error al verificar existencias: $e');
-      return false; // En caso de error, devuelve false
+      return false; 
     }
   }
 
@@ -243,13 +236,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             shrinkWrap: true,
             padding: const EdgeInsets.all(10),
             children: [
-              Text('Carrito de compras',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Carrito de compras', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ...cart.map((item) {
                 return ListTile(
                   title: Text(item['nombre']),
-                  subtitle: Text(
-                      'Cantidad: ${item['quantity']} - Total: Q${item['precio'] * item['quantity']}'),
+                  subtitle: Text('Cantidad: ${item['quantity']} - Total: Q${item['precio'] * item['quantity']}'),
                   trailing: IconButton(
                     icon: Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
@@ -319,7 +310,65 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         _updateCart(product, quantities[index]);
       });
     } else {
-      cantidadBolsas--;
+      cantidadBolsas--; 
+    }
+  }
+
+  Future<void> _askIfGarrafonIsNew(BuildContext context, dynamic product, int index) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('¿Es un Garrafón nuevo?'),
+          content: const Text('Por favor selecciona si el Garrafón es nuevo o no.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'No'),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'Si'),
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      if (result == 'Si') {
+        await agregarGarrafonNuevo(product, index);
+      } else {
+        await agregarGarrafonViejo(product, index);
+      }
+    }
+  }
+
+  Future<void> agregarGarrafonNuevo(dynamic product, int index) async {
+    cantidadGarrafonNuevo++;
+    final existencias = await verificarExistencias(context);
+    if (existencias) {
+      setState(() {
+        quantities[index]++;
+        globalTotalAmount += product['precio'];
+        _updateCart(product, quantities[index]);
+      });
+    } else {
+      cantidadGarrafonNuevo--; 
+    }
+  }
+
+  Future<void> agregarGarrafonViejo(dynamic product, int index) async {
+    cantidadGarrafonViejo++;
+    final existencias = await verificarExistencias(context);
+    if (existencias) {
+      setState(() {
+        quantities[index]++;
+        globalTotalAmount += product['precio'];
+        _updateCart(product, quantities[index]);
+      });
+    } else {
+      cantidadGarrafonViejo--;
     }
   }
 
@@ -349,6 +398,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       cart.clear();
       globalTotalAmount = 0.0;
       quantities = List<int>.filled(allProducts.length, 0);
+      cantidadGarrafonNuevo = 0;
+      cantidadGarrafonViejo = 0; 
+      cantidadFardosBotellas = 0;
+      cantidadBolsas = 0; 
     });
   }
 
@@ -357,8 +410,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Salir de la página'),
-            content: const Text(
-                'Si sales ahora, se perderán todos los datos del carrito. ¿Deseas continuar?'),
+            content: const Text('Si sales ahora, se perderán todos los datos del carrito. ¿Deseas continuar?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -419,14 +471,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               product['nombre'],
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
                             ),
                           ),
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Text(
                               'Q${product['precio']}',
                               style: const TextStyle(fontSize: 14),
@@ -448,16 +498,15 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                   }
                                 },
                               ),
-                              Text('${quantities[index]}',
-                                  style: const TextStyle(fontSize: 18)),
+                              Text('${quantities[index]}', style: const TextStyle(fontSize: 18)),
                               IconButton(
                                 icon: const Icon(Icons.add),
                                 onPressed: () {
-                                  if (normalizeText(product['nombre']) ==
-                                      'fardo de botellas') {
+                                  if (normalizeText(product['nombre']) == 'garrafon') {
+                                    _askIfGarrafonIsNew(context, product, index);
+                                  } else if (normalizeText(product['nombre']) == 'fardo de botellas') {
                                     agregarFardoDeBotellas(product, index);
-                                  } else if (normalizeText(product['nombre']) ==
-                                      '25 bolsas') {
+                                  } else if (normalizeText(product['nombre']) == '25 bolsas') {
                                     agregarBolsasDeAgua(product, index);
                                   } else {
                                     setState(() {

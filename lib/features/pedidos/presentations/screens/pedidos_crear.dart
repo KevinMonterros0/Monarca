@@ -139,6 +139,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         final responseBody = jsonDecode(response.body);
         final int idPedido = responseBody['id_pedido'];
         await _saveOrderDetails(idPedido);
+        await _actualizarInventario(idPedido);
         _clearCart();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Pedido creado exitosamente')),
@@ -179,6 +180,38 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       if (response.statusCode != 201) {
         throw Exception('Error al guardar el detalle del pedido.');
       }
+    }
+  }
+
+  Future<void> _actualizarInventario(int idPedido) async {
+    try {
+      final keyValueStorageService = KeyValueStorageServiceImpl();
+      final token = await keyValueStorageService.getValue<String>('token');
+
+      final body = {
+        "cantidad_garrafon_nuevo": cantidadGarrafonNuevo,
+        "cantidad_garrafon_viejo": cantidadGarrafonViejo,
+        "cantidad_bolsas": cantidadBolsas,
+        "cantidad_fardos_botellas": cantidadFardosBotellas
+      };
+
+      final response = await http.post(
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/pedidos/actualizar-inventario'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar el inventario.');
+      }
+    } catch (e) {
+      print('Error al actualizar el inventario: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al actualizar el inventario: $e')),
+      );
     }
   }
 

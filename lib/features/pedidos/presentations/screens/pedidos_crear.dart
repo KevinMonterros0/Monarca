@@ -160,26 +160,49 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     final keyValueStorageService = KeyValueStorageServiceImpl();
     final token = await keyValueStorageService.getValue<String>('token');
 
-    for (var item in cart) {
-      final body = {
-        "id_Pedido": idPedido,
-        "Id_Producto": item['id_producto'],
-        "Cantidad": item['quantity'],
-        "Precio": item['precio'],
-      };
+    final body = {
+      "cantidad_garrafon_nuevo": cantidadGarrafonNuevo,
+      "cantidad_garrafon_viejo": cantidadGarrafonViejo,
+      "cantidad_bolsas": cantidadBolsas,
+      "cantidad_fardos_botellas": cantidadFardosBotellas
+    };
 
-      final response = await http.post(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/detallePedidos/crear'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(body),
-      );
+    if (body["cantidad_garrafon_nuevo"]! > 0) {
+      await _guardarDetallePedido(idPedido, 1, body["cantidad_garrafon_nuevo"]!, 12.0); 
+    }
+    if (body["cantidad_garrafon_viejo"]! > 0) {
+      await _guardarDetallePedido(idPedido, 2, body["cantidad_garrafon_viejo"]!, 12); 
+    }
+    if (body["cantidad_fardos_botellas"]! > 0) {
+      await _guardarDetallePedido(idPedido, 3, body["cantidad_fardos_botellas"]!, 50); 
+    }
+    if (body["cantidad_bolsas"]! > 0) {
+      await _guardarDetallePedido(idPedido, 4, body["cantidad_bolsas"]!, 5); 
+    }
+  }
 
-      if (response.statusCode != 201) {
-        throw Exception('Error al guardar el detalle del pedido.');
-      }
+  Future<void> _guardarDetallePedido(int idPedido, int idProducto, int cantidad, double precio) async {
+    final keyValueStorageService = KeyValueStorageServiceImpl();
+    final token = await keyValueStorageService.getValue<String>('token');
+
+    final body = {
+      "id_Pedido": idPedido,
+      "Id_Producto": idProducto,
+      "Cantidad": cantidad,
+      "Precio": precio,
+    };
+
+    final response = await http.post(
+      Uri.parse('https://apiproyectomonarca.fly.dev/api/detallePedidos/crear'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Error al guardar el detalle del pedido.');
     }
   }
 

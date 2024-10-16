@@ -27,7 +27,7 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
   String _direccion = '';
   String _correo = '';
   DateTime? _fecNacimiento;
-
+  bool _isRepartidor = false;
 
   final TextEditingController _dateController = TextEditingController();
 
@@ -49,8 +49,7 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
 
   Future<void> fetchEmployeeDetails() async {
     try {
-      final token =
-          await KeyValueStorageServiceImpl().getValue<String>('token');
+      final token = await KeyValueStorageServiceImpl().getValue<String>('token');
       final response = await http.get(
         Uri.parse(
             'https://apiproyectomonarca.fly.dev/api/empleados/obtenerPorId/${widget.employeeId}'),
@@ -69,8 +68,8 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
           _direccion = employeeDetails!['direccion'];
           _correo = employeeDetails!['correo'];
           _fecNacimiento = DateTime.parse(employeeDetails!['fec_nacimiento']);
-          _dateController.text = _formatDate(
-              _fecNacimiento); 
+          _isRepartidor = employeeDetails!['repartidor'] ?? false; 
+          _dateController.text = _formatDate(_fecNacimiento); 
           isLoading = false;
         });
       } else {
@@ -93,8 +92,7 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
     }
 
     try {
-      final token =
-          await KeyValueStorageServiceImpl().getValue<String>('token');
+      final token = await KeyValueStorageServiceImpl().getValue<String>('token');
 
       final Map<String, dynamic> body = {
         'Nombre': _nombre,
@@ -103,6 +101,7 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
         'Direccion': _direccion,
         'Correo': _correo,
         'Fec_nacimiento': _fecNacimiento?.toIso8601String(),
+        'repartidor': _isRepartidor, 
       };
 
       final response = await http.put(
@@ -142,15 +141,14 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
     if (picked != null && picked != _fecNacimiento) {
       setState(() {
         _fecNacimiento = picked;
-        _dateController.text = _formatDate(
-            _fecNacimiento); 
+        _dateController.text = _formatDate(_fecNacimiento); 
       });
     }
   }
 
   String _formatDate(DateTime? date) {
     if (date == null) return '';
-    return DateFormat('yyyy-MM-dd').format(date); // Formato de fecha deseado
+    return DateFormat('yyyy-MM-dd').format(date); 
   }
 
   @override
@@ -207,7 +205,6 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
                                 padding: const EdgeInsets.all(40.0),
                                 physics: const ClampingScrollPhysics(),
                                 child: Form(
-                                  // Añadir un formulario para validación
                                   key: _formKey,
                                   child: Column(
                                     children: [
@@ -311,6 +308,22 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(height: 30),
+
+                                      Row(
+                                        children: [
+                                          Checkbox(
+                                            value: _isRepartidor,
+                                            onChanged: (bool? value) {
+                                              setState(() {
+                                                _isRepartidor = value ?? false;
+                                              });
+                                            },
+                                          ),
+                                          const Text('¿Es repartidor?'),
+                                        ],
+                                      ),
+
                                       const SizedBox(height: 50),
                                       SizedBox(
                                         width: double.infinity,

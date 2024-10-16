@@ -77,6 +77,7 @@ class _CreateEmployeeFormState extends ConsumerState<_CreateEmployeeForm> {
   final TextEditingController _correoController = TextEditingController();
   final TextEditingController _fechaNacimientoController = TextEditingController();
 
+  bool _isRepartidor = false;
   DateTime? _fechaNacimiento;
 
   Future<void> _selectDate(BuildContext context) async {
@@ -110,6 +111,7 @@ class _CreateEmployeeFormState extends ConsumerState<_CreateEmployeeForm> {
       'Direccion': _direccionController.text,
       'Correo': _correoController.text,
       'Fec_nacimiento': _fechaNacimiento!.toIso8601String(),
+      'repartidor': _isRepartidor,
     };
     final token = await KeyValueStorageServiceImpl().getValue<String>('token');
     final response = await http.post(
@@ -183,6 +185,21 @@ class _CreateEmployeeFormState extends ConsumerState<_CreateEmployeeForm> {
               hint: 'Selecciona una fecha',
             ),
           ),
+        ),
+        const SizedBox(height: 30),
+
+        Row(
+          children: [
+            Checkbox(
+              value: _isRepartidor,
+              onChanged: (bool? value) {
+                setState(() {
+                  _isRepartidor = value ?? false;
+                });
+              },
+            ),
+            const Text('¿Es repartidor?'),
+          ],
         ),
         const SizedBox(height: 50),
 

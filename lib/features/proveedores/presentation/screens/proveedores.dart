@@ -110,6 +110,14 @@ class _SupplierProductScreenState extends ConsumerState<SupplierProductScreen> {
           },
         ),
         title: const Text('Proveedores'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add, size: 30),
+            onPressed: () {
+              context.push('/proveedoresCreate');
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

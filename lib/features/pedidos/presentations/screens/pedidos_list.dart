@@ -65,13 +65,15 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
           'Content-Type': 'application/json',
         },
         body: json.encode({
-          'estado': newStatus,  
+          'estado': newStatus,
         }),
       );
+      print(response);
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Estado del pedido actualizado exitosamente')),
+          const SnackBar(
+              content: Text('Estado del pedido actualizado exitosamente')),
         );
         fetchOrders();
       } else {
@@ -91,7 +93,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
     final durationToDelivery = fechaEntrega.difference(now);
 
     if (estadoPedido == 'N') {
-      return Colors.grey; 
+      return Colors.grey;
     } else if (estadoPedido == 'E') {
       return const Color(0xFFA7C7E7);
     } else if (durationToDelivery.inHours >= 2) {
@@ -144,19 +146,10 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                   ),
                   confirmDismiss: (direction) async {
                     if (direction == DismissDirection.endToStart) {
-                      await changeOrderStatus(order['id_pedido'], 'N'); 
+                      await changeOrderStatus(order['id_pedido'], 'N');
                     } else if (direction == DismissDirection.startToEnd) {
-                      if (DateTime.now().isBefore(fechaEntrega)) {
-                        await changeOrderStatus(order['id_pedido'], 'E'); 
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'No se puede activar un pedido cuya fecha de entrega ya ha pasado.')),
-                        );
-                      }
+                      await changeOrderStatus(order['id_pedido'], 'E');
                     }
-                    return false;
                   },
                   child: Card(
                     color: getOrderCardColor(fechaEntrega, estadoPedido),
@@ -167,8 +160,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                     child: ListTile(
                       title: Text(
                         'Pedido #${order['id_pedido']}',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,7 +170,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                             style: const TextStyle(color: Colors.black),
                           ),
                           Text(
-                            'Empleado: ${order['empleado']}',
+                            'Repartidor: ${order['empleado']}',
                             style: const TextStyle(color: Colors.black),
                           ),
                           Text(

@@ -227,12 +227,12 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
           'Content-Type': 'application/json',
         },
       );
-
+      
       if (response.statusCode == 200) {
         final List<dynamic> estadoList = json.decode(response.body);
-        final bool currentState = estadoList.first['estado'];
-
+        final bool currentState = estadoList.first['status'];
         final newState = !currentState;
+        
 
         final changeResponse = await http.put(
           Uri.parse('https://apiproyectomonarca.fly.dev/api/clientes/cambiarEstado/$customerId'),
@@ -240,7 +240,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
           },
-          body: jsonEncode({'estado': newState}),
+          body: jsonEncode({'status': newState}),
         );
 
         if (changeResponse.statusCode == 200) {

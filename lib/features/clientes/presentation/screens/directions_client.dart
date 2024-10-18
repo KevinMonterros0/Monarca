@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:go_router/go_router.dart';
+import 'package:monarca/features/auth/presentation/providers/auth_provider.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
 class DireccionesScreen extends ConsumerStatefulWidget {
@@ -41,7 +42,9 @@ class _DireccionesScreenState extends ConsumerState<DireccionesScreen> {
           direcciones = json.decode(response.body);
           isLoading = false;
         });
-      } else {
+      }else if (response.statusCode == 403){
+        ref.read(authProvider.notifier).logout();
+      }  else {
         throw Exception('Error al obtener las direcciones del cliente.');
       }
     } catch (e) {

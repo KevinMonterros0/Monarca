@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:monarca/features/auth/presentation/providers/auth_provider.dart';
 import 'dart:convert';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 import 'package:monarca/features/shared/widgets/geometrical_background.dart';
@@ -49,6 +50,8 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
           _username = userDetails!['username'];
           isLoading = false;
         });
+      }else if (response.statusCode == 403){
+        ref.read(authProvider.notifier).logout();
       } else {
         throw Exception('Error al obtener los detalles del usuario');
       }

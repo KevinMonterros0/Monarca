@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:monarca/features/auth/presentation/providers/auth_provider.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
 class PurchasesScreen extends ConsumerStatefulWidget {
@@ -43,7 +44,9 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen> {
           isLoading = false;
           filteredPurchases = allPurchases;
         });
-      } else if (response.statusCode == 404) {
+      }else if (response.statusCode == 403){
+        ref.read(authProvider.notifier).logout();
+      }  else if (response.statusCode == 404) {
         setState(() {
           allPurchases = [];
           isLoading = false;

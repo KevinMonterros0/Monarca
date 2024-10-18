@@ -44,9 +44,7 @@ class SideMenuState extends ConsumerState<SideMenu> {
           menuItems = data.map((item) => Menu.fromJson(item)).toList();
         });
       }else if(response.statusCode == 403){
-        ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Iniciar sesión nuevamente ')),
-      );
+        ref.read(authProvider.notifier).logout();
       } else {
         print('Error al obtener los menús: ${response.statusCode}');
       }

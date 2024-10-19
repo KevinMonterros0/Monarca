@@ -20,6 +20,8 @@ import 'package:monarca/features/pedidos/presentations/screens/pedidos_repartido
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_crear.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_list.dart';
 import 'package:monarca/features/pedidos/presentations/screens/pedidos_clientes.dart';
+import 'package:monarca/features/products/presentation/screens/inventary.dart';
+import 'package:monarca/features/products/presentation/screens/products_screen.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_crear.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_edit.dart';
 import 'package:monarca/features/proveedores/presentation/screens/proveedores_list.dart';
@@ -230,6 +232,13 @@ final goRouterProvider = Provider((ref) {
           return RepartidorSearchScreen(
               idCliente:
                   idCliente);
+        },
+      ), 
+
+      GoRoute(
+        path: '/inventario',
+        builder: (context, state) {
+          return const ProductosScreen();
         },
       ),
 

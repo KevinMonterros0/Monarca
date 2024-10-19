@@ -33,7 +33,14 @@ class CreateEmployeeScreen extends StatelessWidget {
                     icon: const Icon(Icons.arrow_back_rounded, size: 40, color: Colors.white),
                   ),
                   const Spacer(flex: 1),
-                  Text('Crear empleado', style: textStyles.titleLarge?.copyWith(color: Colors.white)),
+                  Text(
+                    'Crear empleado',
+                    style: textStyles.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.width *
+                          0.08, 
+                    ),
+                  ),
                   const Spacer(flex: 2),
                 ],
               ),

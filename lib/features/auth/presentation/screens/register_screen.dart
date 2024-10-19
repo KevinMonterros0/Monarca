@@ -156,7 +156,13 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
           items.isEmpty
               ? const CircularProgressIndicator()
               : DropdownButton<MyItem>(
-                  hint: Text('Empleado'),
+                  hint: Text(
+                    'Empleado',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width *
+                          0.05, 
+                    ),
+                  ),
                   value: selectedItem,
                   onChanged: (MyItem? newValue) {
                     setState(() {
@@ -166,10 +172,17 @@ class _RegisterFormState extends ConsumerState<_RegisterForm> {
                   items: items.map((MyItem item) {
                     return DropdownMenuItem<MyItem>(
                       value: item,
-                      child: Text(item.name),
+                      child: Text(
+                        item.name,
+                        style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.width *
+                              0.05,
+                        ),
+                      ),
                     );
                   }).toList(),
                 ),
+
           const SizedBox(height: 30),
 
           SizedBox(

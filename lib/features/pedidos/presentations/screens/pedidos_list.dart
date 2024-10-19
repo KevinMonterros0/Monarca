@@ -141,8 +141,16 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
         if (newStatus == 'E') {
           await handleDeliveredOrder(idPedido);
         }
+        final userId = await UserSession().getUserId();
 
-        fetchOrders();
+      final response = await Dio().get(
+          'https://apiproyectomonarca.fly.dev/api/rolUsuarios/obtener-public/$userId');
+      final List<dynamic> roles = response.data;
+        if (_hasValidRole(roles)) {
+        await fetchOrders();
+      } else {
+        await fetchOrdersByRepartidor();
+      }
       } else {
         throw Exception('Error al cambiar el estado del pedido.');
       }

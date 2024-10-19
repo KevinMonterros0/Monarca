@@ -1,9 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import 'package:monarca/features/auth/infrastructure/mappers/user_sesion.dart';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
 class OrdersListScreen extends ConsumerStatefulWidget {
@@ -20,7 +22,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
   @override
   void initState() {
     super.initState();
-    fetchOrders();
+    _fetchUserRole();
   }
 
   Future<void> fetchOrders() async {
@@ -50,6 +52,67 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
       });
       print('Error: $e');
     }
+  }
+
+  Future<void> fetchOrdersByRepartidor() async {
+    try {
+      final keyValueStorageService = KeyValueStorageServiceImpl();
+      final token = await keyValueStorageService.getValue<String>('token');
+      final userId = await UserSession().getUserId();
+
+      final response = await http.get(
+        Uri.parse('https://apiproyectomonarca.fly.dev/api/pedidos/obtener-por-repartidor/$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          allOrders = json.decode(response.body);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Error al obtener los pedidos.');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error: $e');
+    }
+  }
+
+   Future<void> _fetchUserRole() async {
+    try {
+      final userId = await UserSession().getUserId();
+
+      final response = await Dio().get(
+          'https://apiproyectomonarca.fly.dev/api/rolUsuarios/obtener-public/$userId');
+      final List<dynamic> roles = response.data;
+
+      if (_hasValidRole(roles)) {
+        await fetchOrders();
+      } else {
+        await fetchOrdersByRepartidor();
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false; 
+      });
+      print(e);
+    }
+  }
+
+  bool _hasValidRole(List<dynamic> roles) {
+    for (var role in roles) {
+      
+      if (role['id_rol'] == 1 || role['id_rol'] == 6) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<void> changeOrderStatus(int idPedido, String newStatus) async {

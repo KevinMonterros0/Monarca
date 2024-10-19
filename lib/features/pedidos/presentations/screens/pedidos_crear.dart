@@ -19,7 +19,8 @@ class OrdersScreen extends ConsumerStatefulWidget {
   final int idRepartidor;
   final int idCliente;
 
-  const OrdersScreen({super.key, required this.idRepartidor, required this.idCliente});
+  const OrdersScreen(
+      {super.key, required this.idRepartidor, required this.idCliente});
 
   @override
   _OrdersScreenState createState() => _OrdersScreenState();
@@ -110,7 +111,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Future<void> _createOrder() async {
     if (selectedDeliveryDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor selecciona una fecha y hora de entrega.')),
+        SnackBar(
+            content: Text('Por favor selecciona una fecha y hora de entrega.')),
       );
       return;
     }
@@ -168,20 +170,24 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     };
 
     if (body["cantidad_garrafon_nuevo"]! > 0) {
-      await _guardarDetallePedido(idPedido, 1, body["cantidad_garrafon_nuevo"]!, 12.0); 
+      await _guardarDetallePedido(
+          idPedido, 1, body["cantidad_garrafon_nuevo"]!, 12.0);
     }
     if (body["cantidad_garrafon_viejo"]! > 0) {
-      await _guardarDetallePedido(idPedido, 2, body["cantidad_garrafon_viejo"]!, 12); 
+      await _guardarDetallePedido(
+          idPedido, 2, body["cantidad_garrafon_viejo"]!, 12);
     }
     if (body["cantidad_fardos_botellas"]! > 0) {
-      await _guardarDetallePedido(idPedido, 3, body["cantidad_fardos_botellas"]!, 50); 
+      await _guardarDetallePedido(
+          idPedido, 3, body["cantidad_fardos_botellas"]!, 50);
     }
     if (body["cantidad_bolsas"]! > 0) {
-      await _guardarDetallePedido(idPedido, 4, body["cantidad_bolsas"]!, 5); 
+      await _guardarDetallePedido(idPedido, 4, body["cantidad_bolsas"]!, 5);
     }
   }
 
-  Future<void> _guardarDetallePedido(int idPedido, int idProducto, int cantidad, double precio) async {
+  Future<void> _guardarDetallePedido(
+      int idPedido, int idProducto, int cantidad, double precio) async {
     final keyValueStorageService = KeyValueStorageServiceImpl();
     final token = await keyValueStorageService.getValue<String>('token');
 
@@ -219,7 +225,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       };
 
       final response = await http.post(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/pedidos/actualizar-inventario'),
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/pedidos/actualizar-inventario'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -253,7 +260,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       print(body);
 
       final response = await http.post(
-        Uri.parse('https://apiproyectomonarca.fly.dev/api/pedidos/verificar-existencias'),
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/pedidos/verificar-existencias'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -263,7 +271,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
-        if (result != null && result['message'] == 'Existencias suficientes para procesar la compra.') {
+        if (result != null &&
+            result['message'] ==
+                'Existencias suficientes para procesar la compra.') {
           return true;
         } else {
           return false;
@@ -279,7 +289,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       }
     } catch (e) {
       print('Error al verificar existencias: $e');
-      return false; 
+      return false;
     }
   }
 
@@ -292,11 +302,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             shrinkWrap: true,
             padding: const EdgeInsets.all(10),
             children: [
-              Text('Carrito de compras', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Carrito de compras',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ...cart.map((item) {
                 return ListTile(
                   title: Text(item['nombre']),
-                  subtitle: Text('Cantidad: ${item['quantity']} - Total: Q${item['precio'] * item['quantity']}'),
+                  subtitle: Text(
+                      'Cantidad: ${item['quantity']} - Total: Q${item['precio'] * item['quantity']}'),
                   trailing: IconButton(
                     icon: Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
@@ -366,17 +378,19 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         _updateCart(product, quantities[index]);
       });
     } else {
-      cantidadBolsas--; 
+      cantidadBolsas--;
     }
   }
 
-  Future<void> _askIfGarrafonIsNew(BuildContext context, dynamic product, int index) async {
+  Future<void> _askIfGarrafonIsNew(
+      BuildContext context, dynamic product, int index) async {
     final result = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('¿Es un Garrafón nuevo?'),
-          content: const Text('Por favor selecciona si el Garrafón es nuevo o no.'),
+          content:
+              const Text('Por favor selecciona si el Garrafón es nuevo o no.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, 'No'),
@@ -410,7 +424,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         _updateCart(product, quantities[index]);
       });
     } else {
-      cantidadGarrafonNuevo--; 
+      cantidadGarrafonNuevo--;
     }
   }
 
@@ -434,6 +448,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
     if (existingProductIndex != -1) {
       if (quantity == 0) {
+         globalTotalAmount -= cart[existingProductIndex]['precio'] * cart[existingProductIndex]['quantity'];
         cart.removeAt(existingProductIndex);
       } else {
         cart[existingProductIndex]['quantity'] = quantity;
@@ -455,9 +470,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       globalTotalAmount = 0.0;
       quantities = List<int>.filled(allProducts.length, 0);
       cantidadGarrafonNuevo = 0;
-      cantidadGarrafonViejo = 0; 
+      cantidadGarrafonViejo = 0;
       cantidadFardosBotellas = 0;
-      cantidadBolsas = 0; 
+      cantidadBolsas = 0;
     });
   }
 
@@ -466,7 +481,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Salir de la página'),
-            content: const Text('Si sales ahora, se perderán todos los datos del carrito. ¿Deseas continuar?'),
+            content: const Text(
+                'Si sales ahora, se perderán todos los datos del carrito. ¿Deseas continuar?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -485,111 +501,178 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         false;
   }
 
-  @override
-  Widget build(BuildContext context) {
-  return WillPopScope(
-    onWillPop: _showExitWarning,
-    child: Scaffold(
-      appBar: AppBar(
-        title: Text('Productos'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: _showCart,
-          ),
-        ],
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Scrollbar(
-              thumbVisibility: true, 
-              child: ListView.builder(
-                padding: const EdgeInsets.all(10),
-                itemCount: allProducts.length,
-                itemBuilder: (context, index) {
-                  final product = allProducts[index];
+  Future<void> disminuirFardoDeBotellas(dynamic product, int index) async {
+    if (cantidadFardosBotellas > 0 && quantities[index] > 0) {
+      cantidadFardosBotellas--;
+      final existencias = await verificarExistencias(context);
+      if (existencias) {
+        setState(() {
+          quantities[index]--;
+          globalTotalAmount -= product['precio'];
+          _updateCart(product, quantities[index]);
+        });
+      } else {
+        cantidadFardosBotellas++;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('No hay suficientes existencias para continuar.')),
+        );
+      }
+    }
+  }
 
-                  return Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/images/${product['imagen']}',
-                          fit: BoxFit.cover,
-                          width: 150,
-                          height: 150,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            product['nombre'],
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            'Q${product['precio']}',
-                            style: const TextStyle(fontSize: 14),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove),
-                              onPressed: () {
-                                if (quantities[index] > 0) {
-                                  setState(() {
-                                    quantities[index]--;
-                                    globalTotalAmount -= product['precio'];
-                                    _updateCart(product, quantities[index]);
-                                  });
-                                }
-                              },
-                            ),
-                            Text('${quantities[index]}',
-                                style: const TextStyle(fontSize: 18)),
-                            IconButton(
-                              icon: const Icon(Icons.add),
-                              onPressed: () {
-                                if (normalizeText(product['nombre']) ==
-                                    'garrafon') {
-                                  _askIfGarrafonIsNew(context, product, index);
-                                } else if (normalizeText(
-                                        product['nombre']) ==
-                                    'fardo de botellas') {
-                                  agregarFardoDeBotellas(product, index);
-                                } else if (normalizeText(
-                                        product['nombre']) ==
-                                    '25 bolsas') {
-                                  agregarBolsasDeAgua(product, index);
-                                } else {
-                                  setState(() {
-                                    quantities[index]++;
-                                    globalTotalAmount += product['precio'];
-                                    _updateCart(product, quantities[index]);
-                                  });
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-    ),
-  );
+  Future<void> disminuirBolsasDeAgua(dynamic product, int index) async {
+    if (cantidadBolsas > 0 && quantities[index] > 0) {
+      cantidadBolsas--;
+      final existencias = await verificarExistencias(context);
+      if (existencias) {
+        setState(() {
+          quantities[index]--;
+          globalTotalAmount -= product['precio'];
+          _updateCart(product, quantities[index]);
+        });
+      } else {
+        cantidadBolsas++;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('No hay suficientes existencias para continuar.')),
+        );
+      }
+    }
+  }
+
+  Future<void> disminuirGarrafones(dynamic product, int index) async {
+  if ((cantidadGarrafonNuevo > 0 || cantidadGarrafonViejo > 0) && quantities[index] > 0) {
+    cantidadGarrafonNuevo = 0;
+    cantidadGarrafonViejo = 0;
+
+    final existencias = await verificarExistencias(context);
+
+    if (existencias) {
+      setState(() {
+        setState(() {
+  quantities[index] = 0; 
+  globalTotalAmount -= product['precio'] * quantities[index]; 
+  _updateCart(product, quantities[index]);
+});
+
+      });
+    }
+  }
 }
 
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _showExitWarning,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Productos'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.shopping_cart),
+              onPressed: _showCart,
+            ),
+          ],
+        ),
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Scrollbar(
+                thumbVisibility: true,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(10),
+                  itemCount: allProducts.length,
+                  itemBuilder: (context, index) {
+                    final product = allProducts[index];
+
+                    return Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/${product['imagen']}',
+                            fit: BoxFit.cover,
+                            width: 150,
+                            height: 150,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              product['nombre'],
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(
+                              'Q${product['precio']}',
+                              style: const TextStyle(fontSize: 14),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove),
+                                onPressed: () {
+                                  if (quantities[index] > 0) {
+                                    if (normalizeText(product['nombre']) ==
+                                        'garrafon') {
+                                      disminuirGarrafones(product, index);
+                                    } else if (normalizeText(
+                                            product['nombre']) ==
+                                        'fardo de botellas') {
+                                      disminuirFardoDeBotellas(product, index);
+                                    } else if (normalizeText(
+                                            product['nombre']) ==
+                                        '25 bolsas') {
+                                      disminuirBolsasDeAgua(product, index);
+                                    }
+                                  }
+                                },
+                              ),
+                              Text('${quantities[index]}',
+                                  style: const TextStyle(fontSize: 18)),
+                              IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () {
+                                  if (normalizeText(product['nombre']) ==
+                                      'garrafon') {
+                                    _askIfGarrafonIsNew(
+                                        context, product, index);
+                                  } else if (normalizeText(product['nombre']) ==
+                                      'fardo de botellas') {
+                                    agregarFardoDeBotellas(product, index);
+                                  } else if (normalizeText(product['nombre']) ==
+                                      '25 bolsas') {
+                                    agregarBolsasDeAgua(product, index);
+                                  } else {
+                                    setState(() {
+                                      quantities[index]++;
+                                      globalTotalAmount += product['precio'];
+                                      _updateCart(product, quantities[index]);
+                                    });
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+      ),
+    );
+  }
 }

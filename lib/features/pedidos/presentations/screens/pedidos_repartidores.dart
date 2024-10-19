@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:monarca/features/auth/infrastructure/mappers/user_sesion.dart';
 import 'dart:convert';
 import 'package:monarca/features/shared/infrastucture/services/key_value_storage_service_impl.dart';
 
@@ -16,6 +18,7 @@ class RepartidoresNotifier extends StateNotifier<RepartidoresState> {
   RepartidoresNotifier() : super(RepartidoresState());
 
   Future<void> fetchRepartidores() async {
+            print('Entra aqui');
     try {
       final token =
           await KeyValueStorageServiceImpl().getValue<String>('token');
@@ -38,6 +41,62 @@ class RepartidoresNotifier extends StateNotifier<RepartidoresState> {
     } catch (e) {
       print('Error al obtener la lista de repartidores: $e');
     }
+  }
+
+  Future<void> fetchRepartidoresPorUsuario() async {
+            print('Entra aqui 3');
+    try {
+      final token =
+          await KeyValueStorageServiceImpl().getValue<String>('token');
+          final userId = await UserSession().getUserId();
+      final response = await http.get(
+        Uri.parse(
+            'https://apiproyectomonarca.fly.dev/api/empleados/obtenerRepartidorPorUsuario/$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> repartidoresList = json.decode(response.body);
+        allRepartidores = repartidoresList;
+        state = state.copyWith(repartidores: repartidoresList);
+      } else {
+        throw Exception('Error al obtener la lista de repartidor.');
+      }
+    } catch (e) {
+      print('Error al obtener la lista de repartidor $e');
+    }
+  }
+  
+  Future<void> _fetchUserRole() async {
+    try {
+      final userId = await UserSession().getUserId();
+
+      final response = await Dio().get(
+          'https://apiproyectomonarca.fly.dev/api/rolUsuarios/obtener-public/$userId');
+      final List<dynamic> roles = response.data;
+      print(roles);
+      if (_hasValidRole(roles)) {
+;        await fetchRepartidores();
+      } else {
+        await fetchRepartidoresPorUsuario();
+      }
+    } catch (e) {
+
+      print(e);
+    }
+  }
+
+  bool _hasValidRole(List<dynamic> roles) {
+    for (var role in roles) {
+      
+      if (role['id_rol'] == 1 || role['id_rol'] == 6) {
+        return true;
+      }
+    }
+    return false;
   }
 
   void filterRepartidoresByName(String query) {
@@ -86,7 +145,7 @@ class _RepartidorSearchScreenState
   @override
   void initState() {
     super.initState();
-    ref.read(repartidoresProvider.notifier).fetchRepartidores();
+    ref.read(repartidoresProvider.notifier)._fetchUserRole();
   }
 
   @override

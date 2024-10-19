@@ -108,7 +108,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
   bool _hasValidRole(List<dynamic> roles) {
     for (var role in roles) {
       
-      if (role['id_rol'] == 1 || role['id_rol'] == 6) {
+      if (role['id_rol'] != 2) {
         return true;
       }
     }

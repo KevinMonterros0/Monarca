@@ -18,7 +18,6 @@ class RepartidoresNotifier extends StateNotifier<RepartidoresState> {
   RepartidoresNotifier() : super(RepartidoresState());
 
   Future<void> fetchRepartidores() async {
-            print('Entra aqui');
     try {
       final token =
           await KeyValueStorageServiceImpl().getValue<String>('token');
@@ -44,7 +43,6 @@ class RepartidoresNotifier extends StateNotifier<RepartidoresState> {
   }
 
   Future<void> fetchRepartidoresPorUsuario() async {
-            print('Entra aqui 3');
     try {
       final token =
           await KeyValueStorageServiceImpl().getValue<String>('token');
@@ -92,7 +90,7 @@ class RepartidoresNotifier extends StateNotifier<RepartidoresState> {
   bool _hasValidRole(List<dynamic> roles) {
     for (var role in roles) {
       
-      if (role['id_rol'] == 1 || role['id_rol'] == 6) {
+      if (role['id_rol'] != 2 ) {
         return true;
       }
     }

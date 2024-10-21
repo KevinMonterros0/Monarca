@@ -114,6 +114,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
         setState(() {
           allOrders = json.decode(response.body);
           isLoading = false;
+          filterOrders();
         });
       } else {
         throw Exception('Error al obtener los pedidos.');
@@ -213,7 +214,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
     }
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

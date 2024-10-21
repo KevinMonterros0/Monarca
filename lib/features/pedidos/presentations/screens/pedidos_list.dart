@@ -20,6 +20,8 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
   List<dynamic> filteredOrders = [];
   bool isLoading = true;
   DateTime selectedDate = DateTime.now();
+  String selectedState = 'Todos';
+  final List<String> estados = ['Todos', 'A', 'E', 'N'];
 
   @override
   void initState() {
@@ -37,21 +39,26 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
 
     if (pickedDate != null) {
       setState(() {
-        selectedDate = pickedDate ?? DateTime.now();
-        print(selectedDate);
-        filterOrdersByDate(selectedDate!);
+        selectedDate = pickedDate;
+        filterOrders();
       });
     }
   }
 
-  void filterOrdersByDate(DateTime date) {
-    final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+  void filterOrders() {
+    final String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
 
     setState(() {
       filteredOrders = allOrders.where((order) {
         final String fechaEntrega = DateFormat('yyyy-MM-dd')
             .format(DateTime.parse(order['fecha_entrega']));
-        return fechaEntrega == formattedDate;
+        final String estadoPedido = order['estado_pedido'];
+
+        final bool fechaCoincide = fechaEntrega == formattedDate;
+        final bool estadoCoincide =
+            selectedState == 'Todos' || estadoPedido == selectedState;
+
+        return fechaCoincide && estadoCoincide;
       }).toList();
     });
   }
@@ -75,7 +82,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
         setState(() {
           allOrders = json.decode(response.body);
           isLoading = false;
-          filterOrdersByDate(selectedDate);
+          filterOrders();
         });
       } else {
         throw Exception('Error al obtener los pedidos.');
@@ -206,16 +213,35 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
     }
   }
 
-  @override
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lista de Pedidos'),
+        title: const Text('Pedidos'),
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today),
-            onPressed: () {
-              _selectDate(context);
+            onPressed: () => _selectDate(context),
+          ),
+          DropdownButton<String>(
+            value: selectedState,
+            items: estados.map((String estado) {
+              return DropdownMenuItem<String>(
+                value: estado,
+                child: Text(estado == 'A'
+                    ? 'Activo'
+                    : estado == 'E'
+                        ? 'Entregado'
+                        : estado == 'N'
+                            ? 'Cancelado'
+                            : 'Todos'),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedState = newValue!;
+                filterOrders();
+              });
             },
           ),
         ],
@@ -268,9 +294,11 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                         children: [
                           Text('Cliente: ${order['cliente']}'),
                           Text('Repartidor: ${order['empleado']}'),
-                          Text('Fecha de Entrega: ${DateFormat('yyyy-MM-dd').format(fechaEntrega)}'),
+                          Text(
+                              'Fecha de Entrega: ${DateFormat('yyyy-MM-dd').format(fechaEntrega)}'),
                           Text('Total: Q${order['totalpedido']}'),
-                          Text('Estado: ${estadoPedido == 'A' ? 'Activo' : estadoPedido == 'E' ? 'Entregado' : 'Cancelado'}'),
+                          Text(
+                              'Estado: ${estadoPedido == 'A' ? 'Activo' : estadoPedido == 'E' ? 'Entregado' : 'Cancelado'}'),
                         ],
                       ),
                     ),
